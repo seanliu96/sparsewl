@@ -56,13 +56,15 @@ def linear_svm_evaluation(all_feature_matrices, classes, num_repetitions=10,
             test_accuracies.append(best_test)
             if all_std:
                 test_accuracies_complete.append(best_test)
-        test_accuracies_all.append(float(np.array(test_accuracies).mean()))
+        test_accuracies_all.append(float(np.asarray(test_accuracies).mean()))
+
+    test_accuracies_all = np.asarray(test_accuracies_all)
+    test_accuracies_complete = np.asarray(test_accuracies_complete)
 
     if all_std:
-        return (np.array(test_accuracies_all).mean(), np.array(test_accuracies_all).std(),
-                np.array(test_accuracies_complete).std())
+        return (test_accuracies_all.mean(), test_accuracies_all.std(), test_accuracies_complete.std())
     else:
-        return (np.array(test_accuracies_all).mean(), np.array(test_accuracies_all).std())
+        return (test_accuracies_all.mean(), test_accuracies_all.std())
 
 
 # 10-CV for kernel svm and hyperparameter selection.
@@ -121,11 +123,10 @@ def kernel_svm_evaluation(all_matrices, classes, num_repetitions=10,
             test_accuracies.append(best_test)
             train_accuracies.append(best_train)
 
-        test_accuracies_all.append(float(np.array(test_accuracies).mean()))
-        train_accuracies_all.append(float(np.array(train_accuracies).mean()))
+        test_accuracies_all.append(float(np.asarray(test_accuracies).mean()))
+        train_accuracies_all.append(float(np.asarray(train_accuracies).mean()))
+    
+    train_accuracies_all = np.asarray(train_accuracies_all)
+    test_accuracies_all = np.asarray(test_accuracies_all)
 
-    return (np.array(test_accuracies_all).mean(), np.array(train_accuracies_all).mean(), np.array(test_accuracies_all).std())
-
-
-
-
+    return (train_accuracies_all.mean(), train_accuracies_all.std(), test_accuracies_all.mean(), test_accuracies_all.std())

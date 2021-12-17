@@ -19,14 +19,14 @@ namespace GenerateThree {
         GenerateThree(const GraphDatabase &graph_database);
 
         GramMatrix
-        compute_gram_matrix(const uint num_iterations, const bool use_labels, const string algorithm,
+        compute_gram_matrix(const uint num_iterations, const bool use_labels, const bool use_edge_labels, const string algorithm,
                             const bool simple, const bool compute_gram);
 
-        Graph generate_local_graph(const Graph &g, const bool use_labels);
+        Graph generate_local_graph(const Graph &g, const bool use_labels, const bool use_edge_labels);
 
-        Graph generate_global_graph(const Graph &g, const bool use_labels);
+        Graph generate_global_graph(const Graph &g, const bool use_labels, const bool use_edge_labels);
 
-        Graph generate_global_graph_malkin(const Graph &g, const bool use_labels);
+        Graph generate_global_graph_malkin(const Graph &g, const bool use_labels, const bool use_edge_labels);
 
         ~GenerateThree();
 
@@ -35,10 +35,10 @@ namespace GenerateThree {
 
         // Computes labels for vertices of graph.
         ColorCounter
-        compute_colors(const Graph &g, const uint num_iterations, const bool use_labels, const string algorithm);
+        compute_colors(const Graph &g, const uint num_iterations, const bool use_labels, const bool use_edge_labels, const string algorithm);
 
         ColorCounter
-        compute_colors_simple(const Graph &g, const uint num_iterations, const bool use_labels, const string algorithm);
+        compute_colors_simple(const Graph &g, const uint num_iterations, const bool use_labels, const bool use_edge_labels, const string algorithm);
 
         // Manage indices of of labels in feature vectors.
         ColorCounter m_label_to_index;

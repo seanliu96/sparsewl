@@ -309,11 +309,11 @@ namespace GenerateThreeSampling {
 
 
 
-        unordered_map<Edge, uint> edge_type;
+        EdgeLabels edge_type;
         // Manages vertex ids
-        unordered_map<Edge, uint> vertex_id;
+        EdgeLabels vertex_id;
         // Manage type of neighborhood.
-        unordered_map<Edge, uint> local;
+        EdgeLabels local;
         // Map tuples to node ids in new graph.
         unordered_map<ThreeTuple, uint> triple_to_int;
         // Node labels of new graph.
@@ -407,9 +407,9 @@ namespace GenerateThreeSampling {
     void
     GenerateThreeSampling::explore_neighborhood(Graph &g, const ThreeTuple &triple, const uint num_iterations,
                                                 unordered_map<ThreeTuple, uint> &triple_to_int, Graph &new_graph,
-                                                unordered_map<Edge, uint> &edge_type,
-                                                unordered_map<Edge, uint> &vertex_id,
-                                                unordered_map<Edge, uint> &local,
+                                                EdgeLabels &edge_type,
+                                                EdgeLabels &vertex_id,
+                                                EdgeLabels &local,
                                                 unordered_map<Node, Label> &node_label_map, const bool use_labels) {
 
         // Manage depth of node in k-disk.

@@ -209,7 +209,6 @@ namespace AuxiliaryMethods {
         return graph_database;
     }
 
-
     vector<int> read_classes(string data_set_name) {
         string line;
         

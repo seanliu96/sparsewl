@@ -127,10 +127,12 @@ def gnn_evaluation(gnn, ds_name, layers, hidden, max_num_epochs=200, batch_size=
 
             if all_std:
                 test_accuracies_complete.append(best_test)
-        test_accuracies_all.append(float(np.array(test_accuracies).mean()))
+        test_accuracies_all.append(float(np.asarray(test_accuracies).mean()))
+    
+    test_accuracies_all = np.asarray(test_accuracies_all)
+    test_accuracies_complete = np.asarray(test_accuracies_complete)
 
     if all_std:
-        return (np.array(test_accuracies_all).mean(), np.array(test_accuracies_all).std(),
-                np.array(test_accuracies_complete).std())
+        return (test_accuracies_all.mean(), test_accuracies_all.std(), test_accuracies_complete.std())
     else:
-        return (np.array(test_accuracies_all).mean(), np.array(test_accuracies_all).std())
+        return (test_accuracies_all.mean(), test_accuracies_all.std())

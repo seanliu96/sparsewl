@@ -20,10 +20,11 @@ using Node = uint;
 using Nodes = vector<Node>;
 using Label = unsigned long;
 using Labels = vector<Label>;
-using Attributes = vector<vector<float>>;
+using Attribute = vector<float>;
+using Attributes = vector<Attribute>;
 using Edge = tuple<Node, Node>;
-using EdgeLabels = unordered_map<Edge, uint>;
-using EdgeAttributes = unordered_map<Edge,vector<float>>;
+using EdgeLabels = unordered_map<Edge, Label>;
+using EdgeAttributes = unordered_map<Edge, Attribute>;
 using EdgeList = vector<Edge>;
 using SpMatrix = Eigen::SparseMatrix<double>;
 using GramMatrix = SpMatrix;
@@ -133,6 +134,8 @@ namespace GraphLibrary {
 
         EdgeLabels get_local() const;
 
+        void add_dummy();
+
         // Manage node labels.
         Labels m_node_labels;
         Attributes m_node_attributes;
@@ -154,6 +157,8 @@ namespace GraphLibrary {
         size_t m_num_edges;
         // true if graph is directed.
         bool m_is_directed;
+        // true if graph has dummy
+        bool m_has_dummy;
     };
 
     typedef vector<Graph> GraphDatabase;

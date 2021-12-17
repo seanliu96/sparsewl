@@ -686,10 +686,10 @@ namespace GenerateTwo {
         // Inverse of the above map.
         unordered_map <TwoTuple, Node> two_tuple_to_node;
         // Manages edges labels.
-        unordered_map <Edge, uint> edge_type;
+        EdgeLabels edge_type;
         // Manages vertex ids
-        unordered_map <Edge, uint> vertex_id;
-        unordered_map <Edge, uint> local;
+        EdgeLabels vertex_id;
+        EdgeLabels local;
 
         // Create a node for each two set.
         Labels labels;
@@ -787,10 +787,10 @@ namespace GenerateTwo {
         // Inverse of the above map.
         unordered_map <TwoTuple, Node> two_tuple_to_node;
         // Manages edges labels.
-        unordered_map <Edge, uint> edge_type;
+        EdgeLabels edge_type;
         // Manages vertex ids
-        unordered_map <Edge, uint> vertex_id;
-        unordered_map <Edge, uint> local;
+        EdgeLabels vertex_id;
+        EdgeLabels local;
 
         // Create a node for each two set.
         Labels labels;
@@ -898,10 +898,10 @@ namespace GenerateTwo {
         // Inverse of the above map.
         unordered_map <TwoTuple, Node> two_tuple_to_node;
         // Manages edges labels.
-        unordered_map <Edge, uint> edge_type;
+        EdgeLabels edge_type;
         // Manages vertex ids
-        unordered_map <Edge, uint> vertex_id;
-        unordered_map <Edge, uint> local;
+        EdgeLabels vertex_id;
+        EdgeLabels local;
 
         // Create a node for each two set.
         Labels labels;
@@ -1010,10 +1010,10 @@ namespace GenerateTwo {
         // Inverse of the above map.
         unordered_map <TwoTuple, Node> two_tuple_to_node;
         // Manages edges labels.
-        unordered_map <Edge, uint> edge_type;
+        EdgeLabels edge_type;
         // Manages vertex ids
-        unordered_map <Edge, uint> vertex_id;
-        unordered_map <Edge, uint> local;
+        EdgeLabels vertex_id;
+        EdgeLabels local;
 
         // Create a node for each two set.
         Labels labels;
@@ -1172,10 +1172,10 @@ namespace GenerateTwo {
         // Inverse of the above map.
         unordered_map <TwoTuple, Node> two_tuple_to_node;
         // Manages edge labels.
-        unordered_map <Edge, uint> edge_type;
+        EdgeLabels edge_type;
         // Manages vertex ids
-        unordered_map <Edge, uint> vertex_id;
-        unordered_map <Edge, uint> local;
+        EdgeLabels vertex_id;
+        EdgeLabels local;
 
         // Create a node for each two set.
         Labels labels;
@@ -1272,10 +1272,10 @@ namespace GenerateTwo {
         // Inverse of the above map.
         unordered_map <TwoTuple, Node> two_tuple_to_node;
         // Manages edge labels.
-        unordered_map <Edge, uint> edge_type;
+        EdgeLabels edge_type;
         // Manages vertex ids
-        unordered_map <Edge, uint> vertex_id;
-        unordered_map <Edge, uint> local;
+        EdgeLabels vertex_id;
+        EdgeLabels local;
 
 
         // Create a node for each two set.

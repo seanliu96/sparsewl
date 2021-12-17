@@ -473,7 +473,7 @@ int main() {
                 }
 
                 AuxiliaryMethods::write_sparse_gram_matrix(gm, "./svm/GM/EXPSPARSE/" + ds +
-//                                                               "__" + kernel + "_" + to_string(i));
+                                                                "__" + kernel + "_" + to_string(i));
             }
         }
 

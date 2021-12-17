@@ -79,10 +79,10 @@ generate_local_sparse_am(const Graph &g, const bool use_labels, const bool use_e
     // Inverse of the above map.
     unordered_map <TwoTuple, Node> two_tuple_to_node;
     // Manages edges labels.
-    unordered_map <Edge, uint> edge_type;
+    EdgeLabels edge_type;
     // Manages vertex ids
-    unordered_map <Edge, uint> vertex_id;
-    unordered_map <Edge, uint> local;
+    EdgeLabels vertex_id;
+    EdgeLabels local;
 
     // Create a node for each two set.
     Labels labels;
@@ -182,10 +182,10 @@ generate_local_sparse_am_connected(const Graph &g, const bool use_labels, const 
     // Inverse of the above map.
     unordered_map <TwoTuple, Node> two_tuple_to_node;
     // Manages edges labels.
-    unordered_map <Edge, uint> edge_type;
+    EdgeLabels edge_type;
     // Manages vertex ids
-    unordered_map <Edge, uint> vertex_id;
-    unordered_map <Edge, uint> local;
+    EdgeLabels vertex_id;
+    EdgeLabels local;
 
     // Create a node for each two set.
     Labels labels;
@@ -294,10 +294,10 @@ generate_local_sparse_am_con(const Graph &g, const bool use_labels, const bool u
     // Inverse of the above map.
     unordered_map <TwoTuple, Node> two_tuple_to_node;
     // Manages edges labels.
-    unordered_map <Edge, uint> edge_type;
+    EdgeLabels edge_type;
     // Manages vertex ids
-    unordered_map <Edge, uint> vertex_id;
-    unordered_map <Edge, uint> local;
+    EdgeLabels vertex_id;
+    EdgeLabels local;
 
     // Create a node for each two set.
     Labels labels;
@@ -406,10 +406,10 @@ generate_local_sparse_am_unc(const Graph &g, const bool use_labels, const bool u
     // Inverse of the above map.
     unordered_map <TwoTuple, Node> two_tuple_to_node;
     // Manages edges labels.
-    unordered_map <Edge, uint> edge_type;
+    EdgeLabels edge_type;
     // Manages vertex ids
-    unordered_map <Edge, uint> vertex_id;
-    unordered_map <Edge, uint> local;
+    EdgeLabels vertex_id;
+    EdgeLabels local;
 
     // Create a node for each two set.
     Labels labels;
@@ -536,10 +536,10 @@ generate_wl_sparse_am(const Graph &g, const bool use_labels, const bool use_edge
     // Inverse of the above map.
     unordered_map <TwoTuple, Node> two_tuple_to_node;
     // Manages edges labels.
-    unordered_map <Edge, uint> edge_type;
+    EdgeLabels edge_type;
     // Manages vertex ids
-    unordered_map <Edge, uint> vertex_id;
-    unordered_map <Edge, uint> local;
+    EdgeLabels vertex_id;
+    EdgeLabels local;
 
     // Create a node for each two set.
     Labels labels;
@@ -640,10 +640,10 @@ generate_dwl_sparse_am(const Graph &g, const bool use_labels, const bool use_edg
     // Inverse of the above map.
     unordered_map <TwoTuple, Node> two_tuple_to_node;
     // Manages edges labels.
-    unordered_map <Edge, uint> edge_type;
+    EdgeLabels edge_type;
     // Manages vertex ids
-    unordered_map <Edge, uint> vertex_id;
-    unordered_map <Edge, uint> local;
+    EdgeLabels vertex_id;
+    EdgeLabels local;
 
     // Create a node for each two set.
     Labels labels;
@@ -765,10 +765,10 @@ generate_dwled_sparse_am(const Graph &g, const bool use_labels, const bool use_e
     // Inverse of the above map.
     unordered_map <TwoTuple, Node> two_tuple_to_node;
     // Manages edges labels.
-    unordered_map <Edge, uint> edge_type;
+    EdgeLabels edge_type;
     // Manages vertex ids
-    unordered_map <Edge, uint> vertex_id;
-    unordered_map <Edge, uint> local;
+    EdgeLabels vertex_id;
+    EdgeLabels local;
 
     // Create a node for each two set.
     Labels labels;
@@ -886,10 +886,10 @@ generate_local_sparse_am_3(const Graph &g, const bool use_labels, const bool use
     unordered_map <Node, ThreeTuple> node_to_three_tuple;
     // Inverse of the above map.
     unordered_map <ThreeTuple, Node> three_tuple_to_node;
-    unordered_map <Edge, uint> edge_type;
+    EdgeLabels edge_type;
     // Manages vertex ids
-    unordered_map <Edge, uint> vertex_id;
-    unordered_map <Edge, uint> local;
+    EdgeLabels vertex_id;
+    EdgeLabels local;
 
     // Create a node for each two set.
     Labels labels;
@@ -1020,10 +1020,10 @@ generate_local_sparse_am_3_connected(const Graph &g, const bool use_labels, cons
     unordered_map <Node, ThreeTuple> node_to_three_tuple;
     // Inverse of the above map.
     unordered_map <ThreeTuple, Node> three_tuple_to_node;
-    unordered_map <Edge, uint> edge_type;
+    EdgeLabels edge_type;
     // Manages vertex ids
-    unordered_map <Edge, uint> vertex_id;
-    unordered_map <Edge, uint> local;
+    EdgeLabels vertex_id;
+    EdgeLabels local;
 
     // Create a node for each two set.
     Labels labels;
@@ -1174,10 +1174,10 @@ pair <vector<int>, vector<int>> get_edge_labels(const Graph &g, const bool use_l
     // Inverse of the above map.
     unordered_map <TwoTuple, Node> two_tuple_to_node;
     // Manages edges labels.
-    unordered_map <Edge, uint> edge_type;
+    EdgeLabels edge_type;
     // Manages vertex ids
-    unordered_map <Edge, uint> vertex_id;
-    unordered_map <Edge, uint> local;
+    EdgeLabels vertex_id;
+    EdgeLabels local;
 
     // Create a node for each two set.
     Labels labels;

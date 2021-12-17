@@ -3,11 +3,11 @@
 #include "Graph.h"
 
 namespace GraphLibrary {
-    Graph::Graph(const bool directed) : m_is_directed(directed), m_num_nodes(0), m_num_edges(0), m_node_labels(),
+    Graph::Graph(const bool directed) : m_is_directed(directed), m_has_dummy(false), m_num_nodes(0), m_num_edges(0), m_node_labels(),
                                         m_edge_labels(), m_vertex_id(), m_local(), m_node_to_two_tuple(), m_node_to_three_tuple() {}
 
     Graph::Graph(const bool directed, const uint num_nodes, const EdgeList &edgeList, const Labels node_labels)
-            : m_is_directed(directed), m_adjacency_lists(), m_num_nodes(num_nodes), m_num_edges(edgeList.size()),
+            : m_is_directed(directed), m_has_dummy(false), m_adjacency_lists(), m_num_nodes(num_nodes), m_num_edges(edgeList.size()),
               m_node_labels(node_labels), m_edge_labels(), m_vertex_id(), m_local(), m_node_to_two_tuple(), m_node_to_three_tuple() {
         m_adjacency_lists.resize(num_nodes);
 
@@ -142,6 +142,86 @@ namespace GraphLibrary {
 
     unordered_map<Node, ThreeTuple> Graph::get_node_to_three_tuple() const {
         return m_node_to_three_tuple;
+    }
+
+    void Graph::add_dummy() {
+        if (!m_has_dummy) {
+            bool has_node_labels = (m_num_nodes == m_node_labels.size());
+            bool has_node_attributes = (m_num_nodes == m_node_attributes.size());
+            bool has_edge_labels = (m_num_edges == m_edge_labels.size());
+            bool has_edge_attributes = (m_num_edges == m_edge_attributes.size());
+
+            m_has_dummy = true;
+            Node dummy_node = add_node();
+            if (has_node_labels && m_node_labels.size() != 0) {
+                Label dummy_node_label = 0;
+                if (*min_element(m_node_labels.begin(), m_node_labels.end()) == dummy_node_label) {
+                    Labels _m_node_labels;
+                    for (auto label : m_node_labels) {
+                        _m_node_labels.push_back(label + 1);
+                    }
+                    m_node_labels.swap(_m_node_labels);
+                }
+                m_node_labels.push_back(dummy_node_label);
+            }
+            if (has_node_attributes && m_node_attributes.size() != 0) {
+                Attribute dummy_node_attribute;
+                for (uint i = 0; i < m_node_attributes.begin()->size(); ++i) {
+                    dummy_node_attribute.push_back(0);
+                }
+                m_node_attributes.push_back(dummy_node_attribute);
+            }
+
+            for (Node n = 0; n < dummy_node; ++n) {
+                add_edge(dummy_node, n);
+            }
+            if (has_edge_labels && m_edge_labels.size() != 0) {
+                Label dummy_edge_label = 0;
+                bool flag = false;
+                for (auto it = m_edge_labels.begin(); it != m_edge_labels.end(); ++it) {
+                    if (it->second == dummy_edge_label) {
+                        flag = true;
+                        break;
+                    }
+                }
+                if (flag) {
+                    EdgeLabels _m_edge_labels;
+                    for (auto label : m_edge_labels) {
+                        _m_edge_labels.insert({{label.first, label.second + 1}});
+                    }
+                    m_edge_labels.swap(_m_edge_labels);
+                }
+                for (Node n = 0; n < dummy_node; ++n) {
+                    m_edge_labels.insert({{make_tuple(dummy_node, n), dummy_edge_label}});
+                }
+                if (!m_is_directed) {
+                    for (Node n = 0; n < dummy_node; ++n) {
+                        m_edge_labels.insert({{make_tuple(dummy_node, n), dummy_edge_label}});
+                        m_edge_labels.insert({{make_tuple(n, dummy_node), dummy_edge_label}});
+                    }
+                } else {
+                    for (Node n = 0; n < dummy_node; ++n) {
+                        m_edge_labels.insert({{make_tuple(dummy_node, n), dummy_edge_label}});
+                    }
+                }
+            }
+            if (has_edge_attributes && m_edge_attributes.size() != 0) {
+                Attribute dummy_edge_attribute;
+                for (uint i = 0; i < m_edge_attributes.begin()->second.size(); ++i) {
+                    dummy_edge_attribute.push_back(0);
+                }
+                if (!m_is_directed) {
+                    for (Node n = 0; n < dummy_node; ++n) {
+                        m_edge_attributes.insert({{make_tuple(dummy_node, n), dummy_edge_attribute}});
+                        m_edge_attributes.insert({{make_tuple(n, dummy_node), dummy_edge_attribute}});
+                    }
+                } else {
+                    for (Node n = 0; n < dummy_node; ++n) {
+                        m_edge_attributes.insert({{make_tuple(dummy_node, n), dummy_edge_attribute}});
+                    }
+                }
+            }
+        }
     }
 
     Graph::~Graph() {}

@@ -47,9 +47,9 @@ namespace GenerateThreeSampling {
         // Get neighborhood of a node.
         void explore_neighborhood(Graph &g, const ThreeTuple &triple, const uint num_iterations,
                                   unordered_map<ThreeTuple, uint> &triple_to_int, Graph &new_graph,
-                                  unordered_map<Edge, uint> &edge_type,
-                                  unordered_map<Edge, uint> &vertex_id,
-                                  unordered_map<Edge, uint> &local, unordered_map<Node, Label> &node_label_map,
+                                  EdgeLabels &edge_type,
+                                  EdgeLabels &vertex_id,
+                                  EdgeLabels &local, unordered_map<Node, Label> &node_label_map,
                                   const bool use_labels);
 
 

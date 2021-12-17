@@ -11,7 +11,7 @@ namespace GenerateThree {
 
 
     GramMatrix
-    GenerateThree::compute_gram_matrix(const uint num_iterations, const bool use_labels, const string algorithm,
+    GenerateThree::compute_gram_matrix(const uint num_iterations, const bool use_labels, const bool use_edge_labels, const string algorithm,
                                        const bool simple, const bool compute_gram) {
         vector<ColorCounter> color_counters;
         color_counters.reserve(m_graph_database.size());
@@ -19,9 +19,9 @@ namespace GenerateThree {
         // Compute labels for each graph in graph database.
         for (Graph &graph: m_graph_database) {
             if (simple) {
-                color_counters.push_back(compute_colors_simple(graph, num_iterations, use_labels, algorithm));
+                color_counters.push_back(compute_colors_simple(graph, num_iterations, use_labels, use_edge_labels, algorithm));
             } else {
-                color_counters.push_back(compute_colors(graph, num_iterations, use_labels, algorithm));
+                color_counters.push_back(compute_colors(graph, num_iterations, use_labels, use_edge_labels, algorithm));
             }
         }
 
@@ -58,16 +58,16 @@ namespace GenerateThree {
     }
 
 
-    ColorCounter GenerateThree::compute_colors(const Graph &g, const uint num_iterations, const bool use_labels,
+    ColorCounter GenerateThree::compute_colors(const Graph &g, const uint num_iterations, const bool use_labels, const bool use_edge_labels,
                                                const string algorithm) {
 
         Graph tuple_graph(false);
         if (algorithm == "local") {
-            tuple_graph = generate_local_graph(g, use_labels);
+            tuple_graph = generate_local_graph(g, use_labels, use_edge_labels);
         } else if (algorithm == "wl") {
-            tuple_graph = generate_global_graph(g, use_labels);
+            tuple_graph = generate_global_graph(g, use_labels, use_edge_labels);
         } else if (algorithm == "malkin") {
-            tuple_graph = generate_global_graph_malkin(g, use_labels);
+            tuple_graph = generate_global_graph_malkin(g, use_labels, use_edge_labels);
         }
 
         size_t num_nodes = tuple_graph.get_num_nodes();
@@ -413,16 +413,16 @@ namespace GenerateThree {
         return color_map;
     }
 
-    ColorCounter GenerateThree::compute_colors_simple(const Graph &g, const uint num_iterations, const bool use_labels,
+    ColorCounter GenerateThree::compute_colors_simple(const Graph &g, const uint num_iterations, const bool use_labels, const bool use_edge_labels,
                                                       const string algorithm) {
 
         Graph tuple_graph(false);
         if (algorithm == "local" or algorithm == "localp") {
-            tuple_graph = generate_local_graph(g, use_labels);
+            tuple_graph = generate_local_graph(g, use_labels, use_edge_labels);
         } else if (algorithm == "wl") {
-            tuple_graph = generate_global_graph(g, use_labels);
+            tuple_graph = generate_global_graph(g, use_labels, use_edge_labels);
         } else if (algorithm == "malkin") {
-            tuple_graph = generate_global_graph_malkin(g, use_labels);
+            tuple_graph = generate_global_graph_malkin(g, use_labels, use_edge_labels);
         }
 
         ColorCounter color_map_1;
@@ -792,7 +792,7 @@ namespace GenerateThree {
     }
 
 
-    Graph GenerateThree::generate_local_graph(const Graph &g, const bool use_labels) {
+    Graph GenerateThree::generate_local_graph(const Graph &g, const bool use_labels, const bool use_edge_labels) {
         size_t num_nodes = g.get_num_nodes();
         // New graph to be generated.
         Graph three_tuple_graph(false);
@@ -801,10 +801,10 @@ namespace GenerateThree {
         unordered_map<Node, ThreeTuple> node_to_three_tuple;
         // Inverse of the above map.
         unordered_map<ThreeTuple, Node> three_tuple_to_node;
-        unordered_map<Edge, uint> edge_type;
+        EdgeLabels edge_type;
         // Manages vertex ids
-        unordered_map<Edge, uint> vertex_id;
-        unordered_map<Edge, uint> local;
+        EdgeLabels vertex_id;
+        EdgeLabels local;
 
         // Create a node for each two set.
         Labels labels;
@@ -919,7 +919,7 @@ namespace GenerateThree {
         return three_tuple_graph;
     }
 
-    Graph GenerateThree::generate_global_graph(const Graph &g, const bool use_labels) {
+    Graph GenerateThree::generate_global_graph(const Graph &g, const bool use_labels, const bool use_edge_labels) {
         size_t num_nodes = g.get_num_nodes();
         // New graph to be generated.
         Graph three_tuple_graph(false);
@@ -928,9 +928,9 @@ namespace GenerateThree {
         unordered_map<Node, ThreeTuple> node_to_three_tuple;
         // Inverse of the above map.
         unordered_map<ThreeTuple, Node> three_tuple_to_node;
-        unordered_map<Edge, uint> edge_type;
-        unordered_map<Edge, uint> vertex_id;
-        unordered_map<Edge, uint> local;
+        EdgeLabels edge_type;
+        EdgeLabels vertex_id;
+        EdgeLabels local;
 
         // Create a node for each two set.
         Labels labels;
@@ -1042,7 +1042,7 @@ namespace GenerateThree {
     }
 
 
-    Graph GenerateThree::generate_global_graph_malkin(const Graph &g, const bool use_labels) {
+    Graph GenerateThree::generate_global_graph_malkin(const Graph &g, const bool use_labels, const bool use_edge_labels) {
         size_t num_nodes = g.get_num_nodes();
         // New graph to be generated.
         Graph three_tuple_graph(false);
@@ -1051,10 +1051,10 @@ namespace GenerateThree {
         unordered_map<Node, ThreeTuple> node_to_three_tuple;
         // Inverse of the above map.
         unordered_map<ThreeTuple, Node> three_tuple_to_node;
-        unordered_map<Edge, uint> edge_type;
+        EdgeLabels edge_type;
         // Manages vertex ids
-        unordered_map<Edge, uint> vertex_id;
-        unordered_map<Edge, uint> local;
+        EdgeLabels vertex_id;
+        EdgeLabels local;
 
         // Create a node for each two set.
         Labels labels;

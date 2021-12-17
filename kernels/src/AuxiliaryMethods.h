@@ -38,6 +38,7 @@ namespace AuxiliaryMethods {
 
     // Reading a graph database from txt file.
     GraphDatabase read_graph_txt_file(string data_set_name);
+    GraphDatabase add_dummy(GraphDatabase &gdb);
 
     vector<int> read_classes(string data_set_name);
 

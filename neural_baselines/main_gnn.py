@@ -14,15 +14,15 @@ def main():
     for d, use_labels in dataset:
         dp.get_dataset(d)
 
-        acc, s_1, s_2 = gnn_evaluation(GIN0, d, [1, 2, 3, 4, 5], [32, 64, 128], max_num_epochs=200, batch_size=64,
+        acc, std1, std2 = gnn_evaluation(GIN0, d, [1, 2, 3, 4, 5], [32, 64, 128], max_num_epochs=200, batch_size=64,
                                        start_lr=0.01, num_repetitions=num_reps, all_std=True)
-        print(d + " " + "GIN0 " + str(acc) + " " + str(s_1) + " " + str(s_2))
-        results.append(d + " " + "GIN0 " + str(acc) + " " + str(s_1) + " " + str(s_2))
+        print(d + " " + "GIN0 " + str(acc) + " " + str(std1) + " " + str(std2))
+        results.append(d + " " + "GIN0 " + str(acc) + " " + str(std1) + " " + str(std2))
 
-        acc, s_1, s_2 = gnn_evaluation(GIN, d, [1, 2, 3, 4, 5], [32, 64, 128], max_num_epochs=200, batch_size=64,
+        acc, std1, std2 = gnn_evaluation(GIN, d, [1, 2, 3, 4, 5], [32, 64, 128], max_num_epochs=200, batch_size=64,
                                        start_lr=0.01, num_repetitions=num_reps, all_std=True)
-        print(d + " " + "GIN " + str(acc) + " " + str(s_1) + " " + str(s_2))
-        results.append(d + " " + "GIN " + str(acc) + " " + str(s_1) + " " + str(s_2))
+        print(d + " " + "GIN " + str(acc) + " " + str(std1) + " " + str(std2))
+        results.append(d + " " + "GIN " + str(acc) + " " + str(std1) + " " + str(std2))
 
     num_reps = 3
 
@@ -35,17 +35,17 @@ def main():
     for d, use_labels in dataset:
         dp.get_dataset(d)
 
-        acc, s_1, s_2 = gnn_evaluation(GINE, d, [2], [64], max_num_epochs=200,
+        acc, std1, std2 = gnn_evaluation(GINE, d, [2], [64], max_num_epochs=200,
                                        batch_size=64, start_lr=0.01,
                                        num_repetitions=num_reps, all_std=True)
-        print(d + " " + "GINE " + str(acc) + " " + str(s_1) + " " + str(s_2))
-        results.append(d + " " + "GINE " + str(acc) + " " + str(s_1) + " " + str(s_2))
+        print(d + " " + "GINE " + str(acc) + " " + str(std1) + " " + str(std2))
+        results.append(d + " " + "GINE " + str(acc) + " " + str(std1) + " " + str(std2))
 
-        acc, s_1, s_2 = gnn_evaluation(GINE0, d, [2], [64], max_num_epochs=200, batch_size=64,
+        acc, std1, std2 = gnn_evaluation(GINE0, d, [2], [64], max_num_epochs=200, batch_size=64,
                                        start_lr=0.01,
                                        num_repetitions=num_reps, all_std=True)
-        print(d + " " + "GINE0 " + str(acc) + " " + str(s_1) + " " + str(s_2))
-        results.append(d + " " + "GINE0 " + str(acc) + " " + str(s_1) + " " + str(s_2))
+        print(d + " " + "GINE0 " + str(acc) + " " + str(std1) + " " + str(std2))
+        results.append(d + " " + "GINE0 " + str(acc) + " " + str(std1) + " " + str(std2))
 
 
 if __name__ == "__main__":
