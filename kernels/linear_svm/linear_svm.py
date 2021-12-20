@@ -40,8 +40,9 @@ def main():
                 xmax = int(feature_vector[:, 0].max())
                 ymax = int(feature_vector[:, 1].max())
 
-                feature_vector = sp.coo_matrix((feature_vector[:, 2], (feature_vector[:, 0], feature_vector[:, 1])),
-                                               shape=(xmax + 1, ymax + 1))
+                feature_vector = sp.coo_matrix(
+                    (feature_vector[:, 2], (feature_vector[:, 0], feature_vector[:, 1])), shape=(xmax + 1, ymax + 1)
+                )
                 feature_vector = feature_vector.tocsr()
 
                 all_feature_matrices.append(feature_vector)
@@ -62,7 +63,7 @@ def main():
                         val = f[val_index]
                         c_train = classes[train_index]
                         c_val = classes[val_index]
-                        for c in [10 ** 3, 10 ** 2, 10 ** 1, 10 ** 0, 10 ** -1, 10 ** -2, 10 ** -3]:
+                        for c in [10**3, 10**2, 10**1, 10**0, 10**-1, 10**-2, 10**-3]:
                             clf = LinearSVC(C=c)
                             clf.fit(train, c_train)
                             p = clf.predict(val)
@@ -82,6 +83,7 @@ def main():
                 test_accuracies_all.append(np.mean(test_accuracies))
 
             print(np.mean(test_accuracies_all), np.std(test_accuracies_all))
+
 
 if __name__ == "__main__":
     main()

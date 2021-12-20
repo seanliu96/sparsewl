@@ -14,27 +14,27 @@ using GraphletCounter = map<Graphlet, uint>;
 using namespace GraphLibrary;
 
 namespace GraphletKernel {
-    class GraphletKernel {
-    public:
-        GraphletKernel(const GraphDatabase &graph_database);
+class GraphletKernel {
+   public:
+    GraphletKernel(const GraphDatabase &graph_database);
 
-        // Computes gram matrix for the graphlet kernel.
-        GramMatrix compute_gram_matrix(const bool use_labels, const bool use_edge_labels, const bool compute_gram);
+    // Computes gram matrix for the graphlet kernel.
+    GramMatrix compute_gram_matrix(const bool use_labels, const bool use_edge_labels, const bool compute_gram);
 
-        ~GraphletKernel();
+    ~GraphletKernel();
 
-    private:
-        // Computes number of graphlets in graph.
-        GraphletCounter compute_graphlet_count(const Graph &g, const bool use_labels, const bool use_edge_labels);
+   private:
+    // Computes number of graphlets in graph.
+    GraphletCounter compute_graphlet_count(const Graph &g, const bool use_labels, const bool use_edge_labels);
 
-        // Manages graphs.
-        GraphDatabase m_graph_database;
+    // Manages graphs.
+    GraphDatabase m_graph_database;
 
-        // Manage indices of labels in feature vectors.
-        ColorCounter m_label_to_index;
+    // Manage indices of labels in feature vectors.
+    ColorCounter m_label_to_index;
 
-        // Counts number of distinct labels over all graphs.
-        uint m_num_labels;
-    };
-}
-#endif //WLFAST_GRAPHLETKERNEL_H
+    // Counts number of distinct labels over all graphs.
+    uint m_num_labels;
+};
+}  // namespace GraphletKernel
+#endif  // WLFAST_GRAPHLETKERNEL_H
