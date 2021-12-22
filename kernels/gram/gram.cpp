@@ -26,10 +26,11 @@ using namespace std;
 
 unordered_map<string, tuple<string, bool, bool>> all_datasets = {
     {"ENZYMES", make_tuple("ENZYMES", true, false)},
-    {"IMDB-BINARY", make_tuple("IMDB-BINARY", false, false)},
-    {"IMDB-MULTI", make_tuple("IMDB-MULTI", false, false)},
-    // {"IMDB-BINARY", make_tuple("IMDB-BINARY", true, false)},
-    // {"IMDB-MULTI", make_tuple("IMDB-MULTI", true, false)},
+    // {"IMDB-BINARY", make_tuple("IMDB-BINARY", false, false)},
+    // {"IMDB-MULTI", make_tuple("IMDB-MULTI", false, false)},
+    {"IMDB-BINARY", make_tuple("IMDB-BINARY", true, false)},
+    {"IMDB-MULTI", make_tuple("IMDB-MULTI", true, false)},
+    {"MUTAG", make_tuple("MUTAG", true, true)},
     {"NCI1", make_tuple("NCI1", true, false)},
     {"NCI109", make_tuple("NCI109", true, false)},
     {"PTC_FM", make_tuple("PTC_FM", true, false)},
@@ -85,13 +86,15 @@ int main(int argc, char **argv) {
             }
             i = j;
         } else if (strcmp(argv[i], "--add_dummy") == 0) {
-            if ((i != argc - 1) && (strlen(argv[i+1]) > 2 && strncmp(argv[i+1], "--", 2) != 0)) {
-                if (strlen(argv[i+1]) == 4 && ((strcmp(argv[i+1], "true") == 0) || (strcmp(argv[i+1], "True") == 0))) {
+            if ((i != argc - 1) && (strlen(argv[i + 1]) > 2 && strncmp(argv[i + 1], "--", 2) != 0)) {
+                if (strlen(argv[i + 1]) == 4 &&
+                    ((strcmp(argv[i + 1], "true") == 0) || (strcmp(argv[i + 1], "True") == 0))) {
                     add_dummy = true;
-                } else if (strlen(argv[i+1]) == 5 && ((strcmp(argv[i+1], "false") == 0) || strcmp(argv[i+1], "False") == 0)) {
+                } else if (strlen(argv[i + 1]) == 5 &&
+                           ((strcmp(argv[i + 1], "false") == 0) || strcmp(argv[i + 1], "False") == 0)) {
                     add_dummy = false;
                 } else {
-                    cout << "Unknown args: " << argv[i] << " " << argv[i+1] << endl;
+                    cout << "Unknown args: " << argv[i] << " " << argv[i + 1] << endl;
                 }
                 i += 2;
             } else {
@@ -135,70 +138,53 @@ int main(int argc, char **argv) {
             if (kernel.compare("WL") == 0) {
                 ColorRefinement::ColorRefinementKernel graph_kernel(gdb);
 
+                high_resolution_clock::time_point t1 = high_resolution_clock::now();
+                vector<GramMatrix> gms =
+                    graph_kernel.compute_gram_matrices(n_iters, use_labels, use_edge_labels, true, false);
+                high_resolution_clock::time_point t2 = high_resolution_clock::now();
+                auto duration = duration_cast<seconds>(t2 - t1).count();
+                cout << kernel + to_string(k) + "-" + to_string(n_iters) << "\t" << ds << "\t" << duration << " seconds"
+                     << endl;
+
                 for (uint i = 0; i <= n_iters; ++i) {
-                    cout << ds + "__" + kernel + to_string(k) + "_" + to_string(i) << endl;
-
-                    GramMatrix gm;
-                    if (i == n_iters) {
-                        high_resolution_clock::time_point t1 = high_resolution_clock::now();
-                        gm = graph_kernel.compute_gram_matrix(i, use_labels, use_edge_labels, true, false);
-                        high_resolution_clock::time_point t2 = high_resolution_clock::now();
-                        auto duration = duration_cast<seconds>(t2 - t1).count();
-                        cout << duration << endl;
-                    } else {
-                        gm = graph_kernel.compute_gram_matrix(i, use_labels, use_edge_labels, true, false);
-                    }
-
                     AuxiliaryMethods::write_libsvm(
-                        gm, classes[d],
+                        gms[i], classes[d],
                         gram_dir + "/" + ds + "__" + kernel + to_string(k) + "_" + to_string(i) + ".gram");
                 }
             } else if (kernel.compare("WLOA") == 0) {
                 ColorRefinement::ColorRefinementKernel graph_kernel(gdb);
 
-                // i starts from 1
+                high_resolution_clock::time_point t1 = high_resolution_clock::now();
+                vector<GramMatrix> gms =
+                    graph_kernel.compute_gram_matrices(n_iters, use_labels, use_edge_labels, true, false);
+                high_resolution_clock::time_point t2 = high_resolution_clock::now();
+                auto duration = duration_cast<seconds>(t2 - t1).count();
+                cout << kernel + "-" + to_string(n_iters) << "\t" << ds << "\t" << duration << " seconds" << endl;
+
                 for (uint i = 1; i <= n_iters; ++i) {
-                    cout << ds + "__" + kernel + "_" + to_string(i) << endl;
-
-                    GramMatrix gm;
-                    if (i == n_iters) {
-                        high_resolution_clock::time_point t1 = high_resolution_clock::now();
-                        gm = graph_kernel.compute_gram_matrix(i, use_labels, use_edge_labels, true, true);
-                        high_resolution_clock::time_point t2 = high_resolution_clock::now();
-                        auto duration = duration_cast<seconds>(t2 - t1).count();
-                        cout << duration << endl;
-                    } else {
-                        gm = graph_kernel.compute_gram_matrix(i, use_labels, use_edge_labels, true, true);
-                    }
-
-                    AuxiliaryMethods::write_libsvm(gm, classes[d],
-                                                   gram_dir + "/" + ds + "__" + kernel + "_" + to_string(i) + ".gram");
+                    AuxiliaryMethods::write_libsvm(
+                        gms[i], classes[d],
+                        gram_dir + "/" + ds + "__" + kernel + to_string(k) + "_" + to_string(i) + ".gram");
                 }
             } else if (kernel.compare("SP") == 0) {
                 ShortestPathKernel::ShortestPathKernel graph_kernel(gdb);
 
-                cout << ds + "__" + kernel + "_" + to_string(0) << endl;
-
-                GramMatrix gm;
                 high_resolution_clock::time_point t1 = high_resolution_clock::now();
-                gm = graph_kernel.compute_gram_matrix(use_labels, true);
+                GramMatrix gm = graph_kernel.compute_gram_matrix(use_labels, true);
                 high_resolution_clock::time_point t2 = high_resolution_clock::now();
                 auto duration = duration_cast<seconds>(t2 - t1).count();
-                cout << duration << endl;
+                cout << kernel + "-" + to_string(n_iters) << "\t" << ds << "\t" << duration << " seconds" << endl;
 
                 AuxiliaryMethods::write_libsvm(gm, classes[d],
                                                gram_dir + "/" + ds + "__" + kernel + "_" + to_string(0) + ".gram");
             } else if (kernel.compare("GR") == 0) {
                 GraphletKernel::GraphletKernel graph_kernel(gdb);
 
-                cout << ds + "__" + kernel + "_" + to_string(0) << endl;
-
-                GramMatrix gm;
                 high_resolution_clock::time_point t1 = high_resolution_clock::now();
-                gm = graph_kernel.compute_gram_matrix(use_labels, use_edge_labels, true);
+                GramMatrix gm = graph_kernel.compute_gram_matrix(use_labels, use_edge_labels, true);
                 high_resolution_clock::time_point t2 = high_resolution_clock::now();
                 auto duration = duration_cast<seconds>(t2 - t1).count();
-                cout << duration << endl;
+                cout << kernel + "-" + to_string(n_iters) << "\t" << ds << "\t" << duration << " seconds" << endl;
 
                 AuxiliaryMethods::write_libsvm(gm, classes[d],
                                                gram_dir + "/" + ds + "__" + kernel + "_" + to_string(0) + ".gram");
@@ -219,22 +205,17 @@ int main(int argc, char **argv) {
                 }
                 GenerateTwo::GenerateTwo graph_kernel(gdb);
 
+                high_resolution_clock::time_point t1 = high_resolution_clock::now();
+                vector<GramMatrix> gms =
+                    graph_kernel.compute_gram_matrices(n_iters, use_labels, use_edge_labels, algorithm, true, true);
+                high_resolution_clock::time_point t2 = high_resolution_clock::now();
+                auto duration = duration_cast<seconds>(t2 - t1).count();
+                cout << kernel + to_string(k) + "-" + to_string(n_iters) << "\t" << ds << "\t" << duration << " seconds"
+                     << endl;
+
                 for (uint i = 0; i <= n_iters; ++i) {
-                    cout << ds + "__" + kernel + to_string(k) + "_" + to_string(i) << endl;
-
-                    GramMatrix gm;
-                    if (i == n_iters) {
-                        high_resolution_clock::time_point t1 = high_resolution_clock::now();
-                        gm = graph_kernel.compute_gram_matrix(i, use_labels, use_edge_labels, algorithm, true, true);
-                        high_resolution_clock::time_point t2 = high_resolution_clock::now();
-                        auto duration = duration_cast<seconds>(t2 - t1).count();
-                        cout << duration << endl;
-                    } else {
-                        gm = graph_kernel.compute_gram_matrix(i, use_labels, use_edge_labels, algorithm, true, true);
-                    }
-
                     AuxiliaryMethods::write_libsvm(
-                        gm, classes[d],
+                        gms[i], classes[d],
                         gram_dir + "/" + ds + "__" + kernel + to_string(k) + "_" + to_string(i) + ".gram");
                 }
             }
@@ -254,22 +235,17 @@ int main(int argc, char **argv) {
                 }
                 GenerateThree::GenerateThree graph_kernel(gdb);
 
+                high_resolution_clock::time_point t1 = high_resolution_clock::now();
+                vector<GramMatrix> gms =
+                    graph_kernel.compute_gram_matrices(n_iters, use_labels, use_edge_labels, algorithm, true, true);
+                high_resolution_clock::time_point t2 = high_resolution_clock::now();
+                auto duration = duration_cast<seconds>(t2 - t1).count();
+                cout << kernel + to_string(k) + "-" + to_string(n_iters) << "\t" << ds << "\t" << duration << " seconds"
+                     << endl;
+
                 for (uint i = 0; i <= n_iters; ++i) {
-                    cout << ds + "__" + kernel + "_" + to_string(i) << endl;
-
-                    GramMatrix gm;
-                    if (i == n_iters) {
-                        high_resolution_clock::time_point t1 = high_resolution_clock::now();
-                        gm = graph_kernel.compute_gram_matrix(i, use_labels, use_edge_labels, algorithm, true, true);
-                        high_resolution_clock::time_point t2 = high_resolution_clock::now();
-                        auto duration = duration_cast<seconds>(t2 - t1).count();
-                        cout << duration << endl;
-                    } else {
-                        gm = graph_kernel.compute_gram_matrix(i, use_labels, use_edge_labels, algorithm, true, true);
-                    }
-
                     AuxiliaryMethods::write_libsvm(
-                        gm, classes[d],
+                        gms[i], classes[d],
                         gram_dir + "/" + ds + "__" + kernel + to_string(k) + "_" + to_string(i) + ".gram");
                 }
             }

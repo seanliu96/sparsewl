@@ -222,8 +222,6 @@ namespace AuxiliaryMethods {
         return targets;
     }
 
-
-
     Label pairing(const Label a, const Label b) {
         return a >= b ? a * a + a + b : a + b * b;
     }

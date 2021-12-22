@@ -1,0 +1,22 @@
+--------------------------------------------------------------------------------
+2021/12/22 16:59:11
+kernel.py --gram_dir ./GM/EXPD --dataset_dir ./datasets --k 1 --n_iters 5 --kernel WL --datasets ENZYMES IMDB-BINARY IMDB-MULTI MUTAG --add_dummy true
+--------------------------------------------------------------------------------
+2021/12/22 17:04:44
+kernel.py --gram_dir ./GM/EXPD --dataset_dir ./datasets --k 1 --n_iters 5 --kernel WL --datasets ENZYMES IMDB-BINARY IMDB-MULTI MUTAG --add_dummy true
+WL1-5	ENZYMES	0 seconds
+!!! Unable to open file 3!!!
+WL1-5	IMDB-BINARY	0 seconds
+!!! Unable to open file 3!!!
+WL1-5	IMDB-MULTI	0 seconds
+!!! Unable to open file 3!!!
+WL1-5	MUTAG	0 seconds
+!!! Unable to open file 3!!!
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+2021/12/22 17:05:08
+kernel.py --gram_dir ./GM/EXPD --dataset_dir ./datasets --k 1 --n_iters 5 --kernel WL --datasets ENZYMES IMDB-BINARY IMDB-MULTI MUTAG --add_dummy true
+WL1-5	ENZYMES	0 seconds
+!!! Unable to open file 3!!!
+WL1-5	IMDB-BINARY	0 seconds
+!!! Unable to open file 3!!!

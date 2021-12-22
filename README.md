@@ -2,16 +2,15 @@
 Code for "_Weisfeiler and Leman go sparse: Towards scalable higher-order graph embeddings_" (NeurIPS 2020).
 
 ## Requirements
-- `Python 3.8`
 - `eigen3`
 - `numpy`
 - `pandas`
 - `scipy`
 - `sklearn`
-- `torch 1.5`
-- `torch-geometric 1.5`
-- `pybind11`
+- `torch>=1.5`
+- `torch-geometric>=1.5`
 - `libsvm`
+- `pybind11`
 
 All results in the paper and the appendix can be reproduced by the following the steps below. 
 
@@ -20,16 +19,21 @@ All results in the paper and the appendix can be reproduced by the following the
 - Download datasets from `www.graphlearning.io`,  and place the unzipped folders into `kernels/datasets`
 - Download `https://www.chrsmrrs.com/wl_goes_sparse_matrices/EXP.zip` and `https://www.chrsmrrs.com/wl_goes_sparse_matrices/EXPSPARSE.zip` and unzip them into `kernels/svm/GM`
 - `cd svm`
-- Run `python svm.py`
+- Run `python svm.py --dataset_dir ../datasets --gram_dir ../GM/EXP --k 1 --n_iters 5 --kernel WL --datasets ENZYMES`
 
 ## Reproducing the kernel experiments from scratch (Tables 1, 2a, 3a, 5, 6, 8, 9)
 - `cd kernels`
 - Download datasets from `www.graphlearning.io`,  and place the unzipped folders into `kernels/datasets`
-- Run `g++ main.cpp src/*cpp -std=c++11 -o local -O2`
-- Run `./local` (running times will be outputted on the screen, too)
+- Run `g++ gram.cpp src/*cpp -std=c++11 -o gram -O2`
+- Create a directory for gram matrices `mkdir ../GM/EXP -p`
+- Run `./gram --dataset_dir ./datasets --gram_dir ../GM/EXP --k 1 --n_iters 5 --kernel WL --datasets ENZYMES` (running times will be outputted on the screen, too)
 - `cd svm`
-- Run `python svm.py`
+- Run `python svm.py --gram_dir ../GM/EXP --dataset_dir ../datasets --k 1 --n_iters 5 --kernel WL --datasets ENZYMES`
 
+### New alternatives (faster)
+- `cd kernels`
+- Download datasets from `www.graphlearning.io`,  and place the unzipped folders into `kernels/datasets`
+- Run `python kernel.py --gram_dir ./GM/EXP --dataset_dir ./datasets --k 1 --n_iters 5 --kernel WL --datasets ENZYMES`
 
 ## Reproducing the neural baselines (Tables 1, 5)
 - `cd neural baselines`

@@ -8,11 +8,14 @@ namespace GenerateTwo {
 GenerateTwo::GenerateTwo(const GraphDatabase &graph_database)
     : m_graph_database(graph_database), m_label_to_index(), m_num_labels(0) {}
 
-GramMatrix GenerateTwo::compute_gram_matrix(const uint num_iterations, const bool use_labels,
-                                            const bool use_edge_labels, const string algorithm, const bool simple,
-                                            const bool compute_gram) {
-    vector<ColorCounter> color_counters;
-    color_counters.reserve(m_graph_database.size());
+vector<GramMatrix> GenerateTwo::compute_gram_matrices(const uint num_iterations, const bool use_labels,
+                                                      const bool use_edge_labels, const string algorithm,
+                                                      const bool simple, const bool compute_gram) {
+    size_t num_graphs = m_graph_database.size();
+    vector<vector<ColorCounter>> color_counters;
+    color_counters.reserve(num_graphs);
+    vector<GramMatrix> gram_matrices;
+    gram_matrices.reserve(num_iterations + 1);
 
     // Compute labels for each graph in graph database.
     for (Graph &graph : m_graph_database) {
@@ -20,19 +23,59 @@ GramMatrix GenerateTwo::compute_gram_matrix(const uint num_iterations, const boo
             color_counters.push_back(
                 compute_colors_simple(graph, num_iterations, use_labels, use_edge_labels, algorithm));
         } else {
-            color_counters.push_back(compute_colors(graph, num_iterations, use_labels, use_edge_labels, algorithm));
+            color_counters.push_back(
+                compute_colors(graph, num_iterations, use_labels, use_edge_labels, algorithm));
         }
     }
 
+    for (uint h = 0; h < num_iterations + 1; ++h) {
+        // Compute feature vectors.
+        vector<S> nonzero_compenents;
+        for (Node i = 0; i < num_graphs; ++i) {
+            for (const auto &j : color_counters[i][h]) {
+                Label key = j.first;
+                uint value = j.second;
+                uint index = m_label_to_index.find(key)->second;
+                nonzero_compenents.push_back(S(i, index, value));
+            }
+        }
+
+        // Compute Gram matrix or feature vectore
+        GramMatrix feature_vectors(num_graphs, m_num_labels);
+        feature_vectors.setFromTriplets(nonzero_compenents.begin(), nonzero_compenents.end());
+
+        if (not compute_gram) {
+            gram_matrices.push_back(feature_vectors);
+        } else {
+            gram_matrices.push_back(feature_vectors * feature_vectors.transpose());
+        }
+    }
+
+    return gram_matrices;
+}
+
+GramMatrix GenerateTwo::compute_gram_matrix(const uint num_iterations, const bool use_labels,
+                                            const bool use_edge_labels, const string algorithm, const bool simple,
+                                            const bool compute_gram) {
     size_t num_graphs = m_graph_database.size();
-    vector<S> nonzero_compenents;
+    vector<ColorCounter> color_counters;
+    color_counters.reserve(m_graph_database.size());
+
+    // Compute labels for each graph in graph database.
+    for (Graph &graph : m_graph_database) {
+        if (simple) {
+            color_counters.push_back(
+                compute_colors_simple(graph, num_iterations, use_labels, use_edge_labels, algorithm)[num_iterations]);
+        } else {
+            color_counters.push_back(
+                compute_colors(graph, num_iterations, use_labels, use_edge_labels, algorithm)[num_iterations]);
+        }
+    }
 
     // Compute feature vectors.
-    ColorCounter c;
+    vector<S> nonzero_compenents;
     for (Node i = 0; i < num_graphs; ++i) {
-        c = color_counters[i];
-
-        for (const auto &j : c) {
+        for (const auto &j : color_counters[i]) {
             Label key = j.first;
             uint value = j.second;
             uint index = m_label_to_index.find(key)->second;
@@ -54,8 +97,8 @@ GramMatrix GenerateTwo::compute_gram_matrix(const uint num_iterations, const boo
     }
 }
 
-ColorCounter GenerateTwo::compute_colors(const Graph &g, const uint num_iterations, const bool use_labels,
-                                         const bool use_edge_labels, const string algorithm) {
+vector<ColorCounter> GenerateTwo::compute_colors(const Graph &g, const uint num_iterations, const bool use_labels,
+                                                 const bool use_edge_labels, const string algorithm) {
     Graph tuple_graph(false);
     if (algorithm == "local" or algorithm == "localp") {
         tuple_graph = generate_local_graph(g, use_labels, use_edge_labels);
@@ -66,7 +109,6 @@ ColorCounter GenerateTwo::compute_colors(const Graph &g, const uint num_iteratio
     } else if (algorithm == "localc" or algorithm == "localpc") {
         tuple_graph = generate_local_graph_connected(g, use_labels, use_edge_labels);
     }
-
     size_t num_nodes = tuple_graph.get_num_nodes();
 
     unordered_map<Node, TwoTuple> node_to_two_tuple;
@@ -74,24 +116,16 @@ ColorCounter GenerateTwo::compute_colors(const Graph &g, const uint num_iteratio
         node_to_two_tuple = tuple_graph.get_node_to_two_tuple();
     }
 
-    Labels coloring;
-    ColorCounter color_map_1;
-    ColorCounter color_map_2;
-
-    Labels coloring_temp;
-
-    coloring.reserve(num_nodes);
-
-    coloring_temp.reserve(num_nodes);
-    coloring = tuple_graph.get_labels();
-    coloring_temp = coloring;
+    Labels coloring = tuple_graph.get_labels();
+    Labels coloring_temp = coloring;
 
     EdgeLabels edge_labels = tuple_graph.get_edge_labels();
     EdgeLabels vertex_id = tuple_graph.get_vertex_id();
     EdgeLabels local = tuple_graph.get_local();
 
     ColorCounter color_map;
-
+    ColorCounter color_map_1;
+    ColorCounter color_map_2;
     unordered_map<Node, bool> check_1;
     unordered_map<Node, bool> check_2;
 
@@ -173,6 +207,13 @@ ColorCounter GenerateTwo::compute_colors(const Graph &g, const uint num_iteratio
         } else {
             it->second++;
         }
+    }
+
+    vector<ColorCounter> color_maps;
+    color_maps.resize(num_iterations + 1);
+    // copy 0-iteration
+    for (auto &item : color_map) {
+        color_maps[0].insert({{item.first, item.second}});
     }
 
     uint h = 1;
@@ -290,6 +331,11 @@ ColorCounter GenerateTwo::compute_colors(const Graph &g, const uint num_iteratio
             }
         }
 
+        // copy h-iteration
+        for (auto &item : color_map) {
+            color_maps[h].insert({{item.first, item.second}});
+        }
+
         // Assign new colors.
         coloring = coloring_temp;
         h++;
@@ -359,11 +405,12 @@ ColorCounter GenerateTwo::compute_colors(const Graph &g, const uint num_iteratio
         }
     }
 
-    return color_map;
+    return color_maps;
 }
 
-ColorCounter GenerateTwo::compute_colors_simple(const Graph &g, const uint num_iterations, const bool use_labels,
-                                                const bool use_edge_labels, const string algorithm) {
+vector<ColorCounter> GenerateTwo::compute_colors_simple(const Graph &g, const uint num_iterations,
+                                                        const bool use_labels, const bool use_edge_labels,
+                                                        const string algorithm) {
     Graph tuple_graph(false);
     if (algorithm == "local" or algorithm == "localp") {
         tuple_graph = generate_local_graph(g, use_labels, use_edge_labels);
@@ -374,30 +421,22 @@ ColorCounter GenerateTwo::compute_colors_simple(const Graph &g, const uint num_i
     } else if (algorithm == "localc" or algorithm == "localpc") {
         tuple_graph = generate_local_graph_connected(g, use_labels, use_edge_labels);
     }
+    size_t num_nodes = tuple_graph.get_num_nodes();
 
     unordered_map<Node, TwoTuple> node_to_two_tuple;
     if (algorithm == "localp" or algorithm == "localpc") {
         node_to_two_tuple = tuple_graph.get_node_to_two_tuple();
     }
 
-    size_t num_nodes = tuple_graph.get_num_nodes();
-
-    Labels coloring;
-
-    ColorCounter color_map_1;
-    ColorCounter color_map_2;
-
-    Labels coloring_temp;
-
-    coloring.reserve(num_nodes);
-    coloring_temp.reserve(num_nodes);
-    coloring = tuple_graph.get_labels();
-    coloring_temp = coloring;
+    Labels coloring = tuple_graph.get_labels();
+    Labels coloring_temp = coloring;
 
     EdgeLabels edge_labels = tuple_graph.get_edge_labels();
     EdgeLabels local = tuple_graph.get_local();
 
     ColorCounter color_map;
+    ColorCounter color_map_1;
+    ColorCounter color_map_2;
     unordered_map<Label, bool> check_1;
     unordered_map<Label, bool> check_2;
 
@@ -480,7 +519,13 @@ ColorCounter GenerateTwo::compute_colors_simple(const Graph &g, const uint num_i
         }
     }
 
-    // size_t tmp = color_map.size();;
+    vector<ColorCounter> color_maps;
+    color_maps.resize(num_iterations + 1);
+    // copy 0-iteration
+    for (auto &item : color_map) {
+        color_maps[0].insert({{item.first, item.second}});
+    }
+
     uint h = 1;
     while (h <= num_iterations) {
         // Iterate over all nodes.
@@ -588,8 +633,11 @@ ColorCounter GenerateTwo::compute_colors_simple(const Graph &g, const uint num_i
                 it->second++;
             }
         }
-        //            cout << color_map.size()-tmp << endl;
-        //            tmp  = color_map.size();
+
+        // copy h-iteration
+        for (auto &item : color_map) {
+            color_maps[h].insert({{item.first, item.second}});
+        }
 
         // Assign new colors.
         coloring = coloring_temp;
@@ -660,7 +708,7 @@ ColorCounter GenerateTwo::compute_colors_simple(const Graph &g, const uint num_i
         }
     }
 
-    return color_map;
+    return color_maps;
 }
 
 Graph GenerateTwo::generate_local_graph(const Graph &g, const bool use_labels, const bool use_edge_labels) {
