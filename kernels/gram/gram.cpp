@@ -201,7 +201,7 @@ int main(int argc, char **argv) {
                 } else if (kernel.compare("LWLP") == 0) {
                     algorithm = "localp";
                 } else {
-                    throw kernel;
+                    throw std::invalid_argument("Error: unsupported kernel " + kernel);
                 }
                 GenerateTwo::GenerateTwo graph_kernel(gdb);
 
@@ -231,7 +231,7 @@ int main(int argc, char **argv) {
                 } else if (kernel.compare("LWLP") == 0) {
                     algorithm = "localp";
                 } else {
-                    throw kernel;
+                    throw std::invalid_argument("Error: unsupported kernel " + kernel);
                 }
                 GenerateThree::GenerateThree graph_kernel(gdb);
 

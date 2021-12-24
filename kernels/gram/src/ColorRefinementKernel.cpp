@@ -9,36 +9,50 @@ ColorRefinementKernel::ColorRefinementKernel(const GraphDatabase &graph_database
     : m_graph_database(graph_database), m_label_to_index(), m_num_labels(0) {}
 
 vector<GramMatrix> ColorRefinementKernel::compute_gram_matrices(const uint num_iterations, const bool use_labels,
-                                                        const bool use_edge_labels, const bool compute_gram,
-                                                        const bool wloa) {
+                                                                const bool use_edge_labels, const bool compute_gram,
+                                                                const bool wloa) {
     size_t num_graphs = m_graph_database.size();
-    vector<vector<ColorCounter>> color_counters;
+    vector<ColorCounter> color_counters;
     color_counters.reserve(num_graphs);
+    vector<vector<uint>> color_numbers;
+    color_numbers.reserve(num_graphs);
     vector<GramMatrix> gram_matrices;
     gram_matrices.reserve(num_iterations + 1);
 
     // Compute labels for each graph in graph database.
     for (Graph &graph : m_graph_database) {
-        color_counters.push_back(compute_colors(graph, num_iterations, use_labels, use_edge_labels));
+        auto colors = compute_colors(graph, num_iterations, use_labels, use_edge_labels);
+        color_counters.push_back(colors.first);
+        color_numbers.push_back(colors.second);
     }
 
+    vector<S> nonzero_compenents;
+    uint num_labels = 0;
     for (uint h = 0; h < num_iterations + 1; ++h) {
-        vector<S> nonzero_compenents;
-        ColorCounter c;
         // Compute feature vectors.
         for (Node i = 0; i < num_graphs; ++i) {
-            for (const auto &j : color_counters[i][h]) {
-                Label key = j.first;
-                uint value = j.second;
+            auto it = color_counters[i].begin();
+            uint new_num_color = color_numbers[i][h];
+            if (h > 0) {
+                for (uint j = 0; j < color_numbers[i][h - 1]; ++j) {
+                    ++it;
+                }
+                new_num_color -= color_numbers[i][h - 1];
+            }
+            while (new_num_color--) {
+                Label key = it->first;
+                uint value = it->second;
                 uint index = m_label_to_index.find(key)->second;
+                num_labels = num_labels > index + 1 ? index : index + 1;
                 nonzero_compenents.push_back(S(i, index, value));
+                ++it;
             }
         }
 
-        // Compute Gram matrix.
-        GramMatrix feature_vectors(num_graphs, m_num_labels);
+        GramMatrix feature_vectors(num_graphs, num_labels);
         feature_vectors.setFromTriplets(nonzero_compenents.begin(), nonzero_compenents.end());
 
+        // Compute Gram matrix.
         if (wloa) {
             MatrixXd gram_matrix = MatrixXd::Zero(num_graphs, num_graphs);
 
@@ -78,12 +92,11 @@ GramMatrix ColorRefinementKernel::compute_gram_matrix(const uint num_iterations,
 
     // Compute labels for each graph in graph database.
     for (Graph &graph : m_graph_database) {
-        color_counters.push_back(compute_colors(graph, num_iterations, use_labels, use_edge_labels)[num_iterations]);
+        color_counters.push_back(compute_colors(graph, num_iterations, use_labels, use_edge_labels).first);
     }
 
-    vector<S> nonzero_compenents;
-
     // Compute feature vectors.
+    vector<S> nonzero_compenents;
     ColorCounter c;
     for (Node i = 0; i < num_graphs; ++i) {
         for (const auto &j : color_counters[i]) {
@@ -128,8 +141,8 @@ GramMatrix ColorRefinementKernel::compute_gram_matrix(const uint num_iterations,
     }
 }
 
-vector<ColorCounter> ColorRefinementKernel::compute_colors(const Graph &g, const uint num_iterations, bool use_labels,
-                                                           bool use_edge_labels) {
+pair<ColorCounter, vector<uint>> ColorRefinementKernel::compute_colors(const Graph &g, const uint num_iterations,
+                                                                       bool use_labels, bool use_edge_labels) {
     size_t num_nodes = g.get_num_nodes();
 
     Labels coloring;
@@ -137,14 +150,14 @@ vector<ColorCounter> ColorRefinementKernel::compute_colors(const Graph &g, const
 
     // Assign labels to nodes.
     if (use_labels) {
-        coloring.reserve(num_nodes);
         coloring = g.get_labels();
-        coloring_temp.reserve(num_nodes);
-        coloring_temp = coloring;
+        if (coloring.size() == 0) {
+            coloring.resize(num_nodes, 0); // default label is 0
+        }
     } else {
-        coloring.resize(num_nodes, m_num_labels);  // default label is 0
-        coloring_temp = coloring;
+        coloring.resize(num_nodes, 0); // default label is 0
     }
+    coloring_temp = coloring;
 
     EdgeLabels edge_labels;
     if (use_edge_labels) {
@@ -167,12 +180,9 @@ vector<ColorCounter> ColorRefinementKernel::compute_colors(const Graph &g, const
         }
     }
 
-    vector<ColorCounter> color_maps;
-    color_maps.resize(num_iterations + 1);
-    // copy 0-iteration
-    for (auto &item : color_map) {
-        color_maps[0].insert({{item.first, item.second}});
-    }
+    vector<uint> color_nums;
+    color_nums.reserve(num_iterations + 1);
+    color_nums.push_back(color_map.size());
 
     uint h = 1;
     while (h <= num_iterations) {
@@ -231,17 +241,16 @@ vector<ColorCounter> ColorRefinementKernel::compute_colors(const Graph &g, const
                 it->second++;
             }
         }
-        // copy h-iteration
-        for (auto &item : color_map) {
-            color_maps[h].insert({{item.first, item.second}});
-        }
+
+        // Remembers previous number of labels
+        color_nums.push_back(color_map.size());
 
         // Assign new colors.
         coloring = coloring_temp;
         h++;
     }
 
-    return color_maps;
+    return std::make_pair(color_map, color_nums);
 }
 
 ColorRefinementKernel::~ColorRefinementKernel() {}

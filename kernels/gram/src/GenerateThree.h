@@ -37,11 +37,12 @@ class GenerateThree {
     GraphDatabase m_graph_database;
 
     // Computes labels for vertices of graph.
-    vector<ColorCounter> compute_colors(const Graph &g, const uint num_iterations, const bool use_labels,
-                                        const bool use_edge_labels, const string algorithm);
+    pair<ColorCounter, vector<uint>> compute_colors(const Graph &g, const uint num_iterations, const bool use_labels,
+                                                    const bool use_edge_labels, const string algorithm);
 
-    vector<ColorCounter> compute_colors_simple(const Graph &g, const uint num_iterations, const bool use_labels,
-                                               const bool use_edge_labels, const string algorithm);
+    pair<ColorCounter, vector<uint>> compute_colors_simple(const Graph &g, const uint num_iterations,
+                                                           const bool use_labels, const bool use_edge_labels,
+                                                           const string algorithm);
 
     // Manage indices of of labels in feature vectors.
     ColorCounter m_label_to_index;

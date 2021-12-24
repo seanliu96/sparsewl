@@ -80,13 +80,16 @@ class Graph {
     size_t add_node();
 
     // Add a single edge to the graph.
-    void add_edge(const Node v, const Node w);
+    void add_edge(const Node &v, const Node &w);
+
+    // add a single dummy node and multile dummy edges
+    size_t add_dummy();
 
     // Get degree of node "v".
-    size_t get_degree(const Node v) const;
+    size_t get_degree(const Node &v) const;
 
     // Get neighbors of node "v".
-    Nodes get_neighbours(const Node v) const;
+    Nodes get_neighbours(const Node &v) const;
 
     // Get number of nodes in graph.
     size_t get_num_nodes() const;
@@ -95,43 +98,33 @@ class Graph {
     size_t get_num_edges() const;
 
     // Returns "1" if edge {u,w} exists, otherwise "0".
-    uint has_edge(const Node v, const Node w) const;
-
-    // Get node labels of graphs.
-    Labels get_labels() const;
+    uint has_edge(const Node &v, const Node &w) const;
 
     // Set node labels of graphs.
     void set_labels(Labels &labels);
+    Labels get_labels() const;
 
     // Get node labels of graphs.
     Attributes get_attributes() const;
-
-    // Set node labels of graphs.
     void set_attributes(Attributes &attributes);
 
-    // Get edge labels of graphs.
     EdgeLabels get_edge_labels() const;
-
-    EdgeLabels get_vertex_id() const;
-
-    // Set edge labels of graphs.
     void set_edge_labels(EdgeLabels &labels);
+
     EdgeAttributes get_edge_attributes() const;
     void set_edge_attributes(EdgeAttributes &labels);
 
+    EdgeLabels get_vertex_id() const;
     void set_vertex_id(EdgeLabels &vertex_id);
 
     void set_local(EdgeLabels &local);
+    EdgeLabels get_local() const;
 
     void set_node_to_two_tuple(unordered_map<Node, TwoTuple> &n);
     unordered_map<Node, TwoTuple> get_node_to_two_tuple() const;
 
     void set_node_to_three_tuple(unordered_map<Node, ThreeTuple> &n);
     unordered_map<Node, ThreeTuple> get_node_to_three_tuple() const;
-
-    EdgeLabels get_local() const;
-
-    void add_dummy();
 
     // Manage node labels.
     Labels m_node_labels;

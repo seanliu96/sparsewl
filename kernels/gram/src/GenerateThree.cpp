@@ -11,32 +11,47 @@ vector<GramMatrix> GenerateThree::compute_gram_matrices(const uint num_iteration
                                                         const bool use_edge_labels, const string algorithm,
                                                         const bool simple, const bool compute_gram) {
     size_t num_graphs = m_graph_database.size();
-    vector<vector<ColorCounter>> color_counters;
+    vector<ColorCounter> color_counters;
     color_counters.reserve(num_graphs);
+    vector<vector<uint>> color_numbers;
+    color_numbers.reserve(num_graphs);
     vector<GramMatrix> gram_matrices;
     gram_matrices.reserve(num_iterations + 1);
 
     // Compute labels for each graph in graph database.
     for (Graph &graph : m_graph_database) {
         if (simple) {
-            color_counters.push_back(
-                compute_colors_simple(graph, num_iterations, use_labels, use_edge_labels, algorithm));
+            auto colors = compute_colors_simple(graph, num_iterations, use_labels, use_edge_labels, algorithm);
+            color_counters.push_back(colors.first);
+            color_numbers.push_back(colors.second);
         } else {
-            color_counters.push_back(
-                compute_colors(graph, num_iterations, use_labels, use_edge_labels, algorithm));
+            auto colors = compute_colors(graph, num_iterations, use_labels, use_edge_labels, algorithm);
+            color_counters.push_back(colors.first);
+            color_numbers.push_back(colors.second);
         }
     }
 
 
+    vector<S> nonzero_compenents;
+    uint num_labels = 0;
     for (uint h = 0; h < num_iterations + 1; ++h) {
         // Compute feature vectors.
-        vector<S> nonzero_compenents;
         for (Node i = 0; i < num_graphs; ++i) {
-            for (const auto &j : color_counters[i][h]) {
-                Label key = j.first;
-                uint value = j.second;
+            auto it = color_counters[i].begin();
+            uint new_num_color = color_numbers[i][h];
+            if (h > 0) {
+                for (uint j = 0; j < color_numbers[i][h - 1]; ++j) {
+                    ++it;
+                }
+                new_num_color -= color_numbers[i][h - 1];
+            }
+            while (new_num_color--) {
+                Label key = it->first;
+                uint value = it->second;
                 uint index = m_label_to_index.find(key)->second;
+                num_labels = num_labels > index + 1 ? index : index + 1;
                 nonzero_compenents.push_back(S(i, index, value));
+                ++it;
             }
         }
 
@@ -65,10 +80,10 @@ GramMatrix GenerateThree::compute_gram_matrix(const uint num_iterations, const b
     for (Graph &graph : m_graph_database) {
         if (simple) {
             color_counters.push_back(
-                compute_colors_simple(graph, num_iterations, use_labels, use_edge_labels, algorithm)[num_iterations]);
+                compute_colors_simple(graph, num_iterations, use_labels, use_edge_labels, algorithm).first);
         } else {
             color_counters.push_back(
-                compute_colors(graph, num_iterations, use_labels, use_edge_labels, algorithm)[num_iterations]);
+                compute_colors(graph, num_iterations, use_labels, use_edge_labels, algorithm).first);
         }
     }
 
@@ -97,7 +112,7 @@ GramMatrix GenerateThree::compute_gram_matrix(const uint num_iterations, const b
     }
 }
 
-vector<ColorCounter> GenerateThree::compute_colors(const Graph &g, const uint num_iterations, const bool use_labels,
+pair<ColorCounter, vector<uint>> GenerateThree::compute_colors(const Graph &g, const uint num_iterations, const bool use_labels,
                                                    const bool use_edge_labels, const string algorithm) {
     Graph tuple_graph(false);
     if (algorithm == "local") {
@@ -235,12 +250,9 @@ vector<ColorCounter> GenerateThree::compute_colors(const Graph &g, const uint nu
         }
     }
 
-    vector<ColorCounter> color_maps;
-    color_maps.resize(num_iterations + 1);
-    // copy 0-iteration
-    for (auto &item : color_map) {
-        color_maps[0].insert({{item.first, item.second}});
-    }
+    vector<uint> color_nums;
+    color_nums.reserve(num_iterations + 1);
+    color_nums.push_back(color_map.size());
 
     uint h = 1;
     while (h <= num_iterations) {
@@ -354,10 +366,8 @@ vector<ColorCounter> GenerateThree::compute_colors(const Graph &g, const uint nu
             }
         }
 
-        // copy h-iteration
-        for (auto &item : color_map) {
-            color_maps[h].insert({{item.first, item.second}});
-        }
+        // Remembers previous number of labels
+        color_nums.push_back(color_map.size());
 
         // Assign new colors.
         coloring = coloring_temp;
@@ -453,10 +463,10 @@ vector<ColorCounter> GenerateThree::compute_colors(const Graph &g, const uint nu
         }
     }
 
-    return color_maps;
+    return std::make_pair(color_map, color_nums);
 }
 
-vector<ColorCounter> GenerateThree::compute_colors_simple(const Graph &g, const uint num_iterations,
+pair<ColorCounter, vector<uint>> GenerateThree::compute_colors_simple(const Graph &g, const uint num_iterations,
                                                           const bool use_labels, const bool use_edge_labels,
                                                           const string algorithm) {
     Graph tuple_graph(false);
@@ -605,12 +615,9 @@ vector<ColorCounter> GenerateThree::compute_colors_simple(const Graph &g, const 
         }
     }
 
-    vector<ColorCounter> color_maps;
-    color_maps.resize(num_iterations + 1);
-    // copy 0-iteration
-    for (auto &item : color_map) {
-        color_maps[0].insert({{item.first, item.second}});
-    }
+    vector<uint> color_nums;
+    color_nums.reserve(num_iterations + 1);
+    color_nums.push_back(color_map.size());
 
     uint h = 1;
     while (h <= num_iterations) {
@@ -733,10 +740,8 @@ vector<ColorCounter> GenerateThree::compute_colors_simple(const Graph &g, const 
             }
         }
 
-        // copy h-iteration
-        for (auto &item : color_map) {
-            color_maps[h].insert({{item.first, item.second}});
-        }
+        // Remembers previous number of labels
+        color_nums.push_back(color_map.size());
 
         // Assign new colors.
         coloring = coloring_temp;
@@ -837,7 +842,7 @@ vector<ColorCounter> GenerateThree::compute_colors_simple(const Graph &g, const 
         }
     }
 
-    return color_maps;
+    return std::make_pair(color_map, color_nums);
 }
 
 Graph GenerateThree::generate_local_graph(const Graph &g, const bool use_labels, const bool use_edge_labels) {

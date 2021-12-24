@@ -42,7 +42,7 @@ size_t Graph::add_node() {
     return m_num_nodes - 1;
 }
 
-void Graph::add_edge(const Node v, const Node w) {
+void Graph::add_edge(const Node &v, const Node &w) {
     if (!m_is_directed) {
         m_adjacency_lists[v].push_back(w);
         m_adjacency_lists[w].push_back(v);
@@ -57,71 +57,7 @@ void Graph::add_edge(const Node v, const Node w) {
     }
 }
 
-size_t Graph::get_degree(const Node v) const { return m_adjacency_lists[v].size(); }
-
-Nodes Graph::get_neighbours(const Node v) const { return m_adjacency_lists[v]; }
-
-size_t Graph::get_num_nodes() const { return m_num_nodes; }
-
-size_t Graph::get_num_edges() const { return m_num_edges; }
-
-uint Graph::has_edge(const Node v, const Node w) const {
-    // This works for directed as well as undirected graphs.
-    if (find(m_adjacency_lists[v].begin(), m_adjacency_lists[v].end(), w) != m_adjacency_lists[v].end()) {
-        return 1;
-    } else {
-        return 0;
-    }
-}
-
-Labels Graph::get_labels() const { return m_node_labels; }
-
-void Graph::set_labels(Labels &labels) {
-    // Copy labels.
-    m_node_labels = labels;
-}
-
-Attributes Graph::get_attributes() const { return m_node_attributes; }
-
-void Graph::set_attributes(Attributes &attributes) { m_node_attributes = attributes; }
-
-void Graph::set_edge_labels(EdgeLabels &labels) {
-    // Copy labels.
-    m_edge_labels = labels;
-}
-
-EdgeLabels Graph::get_edge_labels() const { return m_edge_labels; }
-
-void Graph::set_edge_attributes(EdgeAttributes &labels) {
-    // Copy labels.
-    m_edge_attributes = labels;
-}
-
-EdgeAttributes Graph::get_edge_attributes() const { return m_edge_attributes; }
-
-EdgeLabels Graph::get_vertex_id() const { return m_vertex_id; }
-
-void Graph::set_vertex_id(EdgeLabels &vertex_id) {
-    // Copy labels.
-    m_vertex_id = vertex_id;
-}
-
-EdgeLabels Graph::get_local() const { return m_local; }
-
-void Graph::set_local(EdgeLabels &local) {
-    // Copy labels.
-    m_local = local;
-}
-
-void Graph::set_node_to_two_tuple(unordered_map<Node, TwoTuple> &n) { m_node_to_two_tuple = n; }
-
-void Graph::set_node_to_three_tuple(unordered_map<Node, ThreeTuple> &n) { m_node_to_three_tuple = n; }
-
-unordered_map<Node, TwoTuple> Graph::get_node_to_two_tuple() const { return m_node_to_two_tuple; }
-
-unordered_map<Node, ThreeTuple> Graph::get_node_to_three_tuple() const { return m_node_to_three_tuple; }
-
-void Graph::add_dummy() {
+size_t Graph::add_dummy() {
     if (!m_has_dummy) {
         bool has_node_labels = (m_num_nodes == m_node_labels.size());
         bool has_node_attributes = (m_num_nodes == m_node_attributes.size());
@@ -222,8 +158,76 @@ void Graph::add_dummy() {
                 }
             }
         }
+
+        return dummy_node;
+    } else {
+        return -1;
     }
 }
+
+size_t Graph::get_degree(const Node &v) const { return m_adjacency_lists[v].size(); }
+
+Nodes Graph::get_neighbours(const Node &v) const { return m_adjacency_lists[v]; }
+
+size_t Graph::get_num_nodes() const { return m_num_nodes; }
+
+size_t Graph::get_num_edges() const { return m_num_edges; }
+
+uint Graph::has_edge(const Node &v, const Node &w) const {
+    // This works for directed as well as undirected graphs.
+    if (find(m_adjacency_lists[v].begin(), m_adjacency_lists[v].end(), w) != m_adjacency_lists[v].end()) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+Labels Graph::get_labels() const { return m_node_labels; }
+
+void Graph::set_labels(Labels &labels) {
+    // Copy labels.
+    m_node_labels = labels;
+}
+
+Attributes Graph::get_attributes() const { return m_node_attributes; }
+
+void Graph::set_attributes(Attributes &attributes) { m_node_attributes = attributes; }
+
+void Graph::set_edge_labels(EdgeLabels &labels) {
+    // Copy labels.
+    m_edge_labels = labels;
+}
+
+EdgeLabels Graph::get_edge_labels() const { return m_edge_labels; }
+
+void Graph::set_edge_attributes(EdgeAttributes &labels) {
+    // Copy labels.
+    m_edge_attributes = labels;
+}
+
+EdgeAttributes Graph::get_edge_attributes() const { return m_edge_attributes; }
+
+EdgeLabels Graph::get_vertex_id() const { return m_vertex_id; }
+
+void Graph::set_vertex_id(EdgeLabels &vertex_id) {
+    // Copy labels.
+    m_vertex_id = vertex_id;
+}
+
+EdgeLabels Graph::get_local() const { return m_local; }
+
+void Graph::set_local(EdgeLabels &local) {
+    // Copy labels.
+    m_local = local;
+}
+
+void Graph::set_node_to_two_tuple(unordered_map<Node, TwoTuple> &n) { m_node_to_two_tuple = n; }
+
+unordered_map<Node, TwoTuple> Graph::get_node_to_two_tuple() const { return m_node_to_two_tuple; }
+
+void Graph::set_node_to_three_tuple(unordered_map<Node, ThreeTuple> &n) { m_node_to_three_tuple = n; }
+
+unordered_map<Node, ThreeTuple> Graph::get_node_to_three_tuple() const { return m_node_to_three_tuple; }
 
 Graph::~Graph() {}
 }  // namespace GraphLibrary

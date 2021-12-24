@@ -22,15 +22,15 @@ class ColorRefinementKernel {
     // Computes gram matrix for the Weisfeiler-Lehman subtree kernel.
     GramMatrix compute_gram_matrix(const uint num_iterations, const bool use_labels, const bool use_edge_labels,
                                    const bool compute_gram, const bool wloa);
-    vector<GramMatrix> compute_gram_matrices(const uint num_iterations, const bool use_labels, const bool use_edge_labels,
-                                     const bool compute_gram, const bool wloa);
+    vector<GramMatrix> compute_gram_matrices(const uint num_iterations, const bool use_labels,
+                                             const bool use_edge_labels, const bool compute_gram, const bool wloa);
 
     ~ColorRefinementKernel();
 
    private:
     // Computes labels for vertices of graph.
-    vector<ColorCounter> compute_colors(const Graph &g, const uint num_iterations, bool use_labels,
-                                        bool use_edge_labels);
+    pair<ColorCounter, vector<uint>> compute_colors(const Graph &g, const uint num_iterations, bool use_labels,
+                                                    bool use_edge_labels);
 
     // Manages graphs.
     GraphDatabase m_graph_database;
