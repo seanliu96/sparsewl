@@ -49,7 +49,7 @@ vector<GramMatrix> GenerateThree::compute_gram_matrices(const uint num_iteration
                 Label key = it->first;
                 uint value = it->second;
                 uint index = m_label_to_index.find(key)->second;
-                num_labels = num_labels > index + 1 ? index : index + 1;
+                num_labels = num_labels > index + 1 ? num_labels : index + 1;
                 nonzero_compenents.push_back(S(i, index, value));
                 ++it;
             }

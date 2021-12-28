@@ -34,6 +34,7 @@ unordered_map<string, tuple<string, bool, bool>> all_datasets = {
     {"NCI1", make_tuple("NCI1", true, false)},
     {"NCI109", make_tuple("NCI109", true, false)},
     {"PTC_FM", make_tuple("PTC_FM", true, false)},
+    {"PTC_FR", make_tuple("PTC_FR", true, false)},
     {"PROTEINS", make_tuple("PROTEINS", true, false)},
     {"REDDIT-BINARY", make_tuple("REDDIT-BINARY", false, false)},
     {"Yeast", make_tuple("Yeast", true, true)},

@@ -43,7 +43,7 @@ vector<GramMatrix> ColorRefinementKernel::compute_gram_matrices(const uint num_i
                 Label key = it->first;
                 uint value = it->second;
                 uint index = m_label_to_index.find(key)->second;
-                num_labels = num_labels > index + 1 ? index : index + 1;
+                num_labels = num_labels > index + 1 ? num_labels : index + 1;
                 nonzero_compenents.push_back(S(i, index, value));
                 ++it;
             }
@@ -165,18 +165,16 @@ pair<ColorCounter, vector<uint>> ColorRefinementKernel::compute_colors(const Gra
     }
 
     ColorCounter color_map;
-    if (use_labels) {
-        for (Node v = 0; v < num_nodes; ++v) {
-            Label new_color = coloring[v];
+    for (Node v = 0; v < num_nodes; ++v) {
+        Label new_color = coloring[v];
 
-            ColorCounter::iterator it(color_map.find(new_color));
-            if (it == color_map.end()) {
-                color_map.insert({{new_color, 1}});
-                m_label_to_index.insert({{new_color, m_num_labels}});
-                m_num_labels++;
-            } else {
-                it->second++;
-            }
+        ColorCounter::iterator it(color_map.find(new_color));
+        if (it == color_map.end()) {
+            color_map.insert({{new_color, 1}});
+            m_label_to_index.insert({{new_color, m_num_labels}});
+            m_num_labels++;
+        } else {
+            it->second++;
         }
     }
 
