@@ -26,6 +26,7 @@ using namespace std;
 
 unordered_map<string, tuple<string, bool, bool>> all_datasets = {
     {"ENZYMES", make_tuple("ENZYMES", true, false)},
+    {"DD", make_tuple("DD", true, false)},
     // {"IMDB-BINARY", make_tuple("IMDB-BINARY", false, false)},
     // {"IMDB-MULTI", make_tuple("IMDB-MULTI", false, false)},
     {"IMDB-BINARY", make_tuple("IMDB-BINARY", true, false)},
