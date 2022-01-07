@@ -1,10 +1,7 @@
 import argparse
 import numpy as np
 import os
-import torch
-from torch.utils.data import random_split
-from sklearn.model_selection import train_test_split
-from auxiliarymethods.kernel_evaluation import kernel_svm_evaluation
+from auxiliarymethods.kernel_evaluation import kernel_svm_nips
 from auxiliarymethods.auxiliary_methods import read_lib_svm, normalize_gram_matrix
 
 
@@ -38,8 +35,14 @@ if __name__ == "__main__":
         help="number of runs"
     )
     parser.add_argument(
-        "--seeds", nargs="+",
-        help="seeds"
+        "--n_reps", type=int,
+        default=10,
+        help="number of repetitions"
+    )
+    parser.add_argument(
+        "--n_folds", type=int,
+        default=10,
+        help="folds of cross-validation"
     )
     parser.add_argument(
         "--datasets", nargs="+",
@@ -82,62 +85,35 @@ if __name__ == "__main__":
             print("Gram matrices for %s are not found." % (dataset))
             continue
 
-        train_accuracies_all = np.zeros((len(args.seeds), len(gram_matrices)))
-        valid_accuracies_all = np.zeros((len(args.seeds), len(gram_matrices)))
-        test_accuracies_all = np.zeros((len(args.seeds), len(gram_matrices)))
-        for i, seed in enumerate(args.seeds):
-            seed = int(seed)
-            torch.manual_seed(seed)
-            if torch.cuda.is_available():
-                torch.cuda.manual_seed(seed)
-            num_graphs = len(gram_matrices[0])
-            num_train = int(num_graphs * 0.8)
-            num_valid = int(num_graphs * 0.1)
-            num_test = num_graphs - (num_train + num_valid)
-            train_index, valid_index, test_index = random_split(np.arange(num_graphs), [num_train, num_valid, num_test])
-            train_index = train_index.indices
-            valid_index = valid_index.indices
-            test_index = test_index.indices
-            train_matrices = [gram_matrix[train_index][:, train_index] for gram_matrix in gram_matrices]
-            valid_matrices = [gram_matrix[valid_index][:, train_index] for gram_matrix in gram_matrices]
-            test_matrices = [gram_matrix[test_index][:, train_index] for gram_matrix in gram_matrices]
-
-            # num_iterations
-            train_accuracies, valid_accuracies, test_accuracies = \
-                kernel_svm_evaluation(
-                    train_matrices, valid_matrices, test_matrices,
-                    classes[train_index], classes[valid_index], classes[test_index],
-                    C=None, seed=seed
-                )
-            train_accuracies_all[i] = train_accuracies
-            valid_accuracies_all[i] = valid_accuracies
-            test_accuracies_all[i] = test_accuracies
+        # num_repetitions x num_folds x num_iterations
+        train_accuracies_all, valid_accuracies_all, test_accuracies_all = \
+            kernel_svm_nips(gram_matrices, classes, num_repetitions=args.n_reps, num_folds=args.n_folds)
 
         for k in range(len(gram_matrices)):
             print(
                 kernel + "-" + str(k),
                 dataset,
-                round(train_accuracies_all[:, k].mean(), 2),
-                round(train_accuracies_all[:, k].std(), 2),
-                round(valid_accuracies_all[:, k].mean(), 2),
-                round(valid_accuracies_all[:, k].std(), 2),
-                round(test_accuracies_all[:, k].mean(), 2),
-                round(test_accuracies_all[:, k].std(), 2),
+                round(train_accuracies_all[:, :, k].mean(), 2),
+                round(train_accuracies_all[:, :, k].mean(axis=1).std(), 2),
+                round(valid_accuracies_all[:, :, k].mean(), 2),
+                round(valid_accuracies_all[:, :, k].mean(axis=1).std(), 2),
+                round(test_accuracies_all[:, :, k].mean(), 2),
+                round(test_accuracies_all[:, :, k].mean(axis=1).std(), 2),
                 sep="\t"
             )
         
-        best_k_ind = np.expand_dims(valid_accuracies_all.argmax(axis=1), axis=1)
-        train_accuracies_avg = np.take_along_axis(train_accuracies_all, best_k_ind, axis=1).squeeze(axis=1)
-        valid_accuracies_avg = np.take_along_axis(valid_accuracies_all, best_k_ind, axis=1).squeeze(axis=1)
-        test_accuracies_avg = np.take_along_axis(test_accuracies_all, best_k_ind, axis=1).squeeze(axis=1)
+        best_k_ind = np.expand_dims(valid_accuracies_all.argmax(axis=2), axis=2)
+        train_accuracies_avg = np.take_along_axis(train_accuracies_all, best_k_ind, axis=2).squeeze(axis=2)
+        valid_accuracies_avg = np.take_along_axis(valid_accuracies_all, best_k_ind, axis=2).squeeze(axis=2)
+        test_accuracies_avg = np.take_along_axis(test_accuracies_all, best_k_ind, axis=2).squeeze(axis=2)
         print(
             kernel + "-avg",
             dataset,
             round(train_accuracies_avg.mean(), 2),
-            round(train_accuracies_avg.std(), 2),
+            round(train_accuracies_avg.mean(axis=1).std(), 2),
             round(valid_accuracies_avg.mean(), 2),
-            round(valid_accuracies_avg.std(), 2),
+            round(valid_accuracies_avg.mean(axis=1).std(), 2),
             round(test_accuracies_avg.mean(), 2),
-            round(test_accuracies_avg.std(), 2),
+            round(test_accuracies_avg.mean(axis=1).std(), 2),
             sep="\t"
         )

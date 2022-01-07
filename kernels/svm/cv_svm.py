@@ -1,7 +1,7 @@
 import argparse
 import numpy as np
 import os
-from auxiliarymethods.kernel_evaluation import kernel_svm_cross_validation
+from auxiliarymethods.kernel_evaluation import kernel_svm_cv
 from auxiliarymethods.auxiliary_methods import read_lib_svm, normalize_gram_matrix
 
 
@@ -35,8 +35,8 @@ if __name__ == "__main__":
         help="number of runs"
     )
     parser.add_argument(
-        "--n_reps", type=int,
-        default=10,
+        "--seed", type=int,
+        default=0,
         help="number of repetitions"
     )
     parser.add_argument(
@@ -85,35 +85,35 @@ if __name__ == "__main__":
             print("Gram matrices for %s are not found." % (dataset))
             continue
 
-        # num_repetitions x num_folds x num_iterations
+        # num_folds x num_iterations
         train_accuracies_all, valid_accuracies_all, test_accuracies_all = \
-            kernel_svm_cross_validation(gram_matrices, classes, num_repetitions=args.n_reps, num_folds=args.n_folds)
+            kernel_svm_cv(gram_matrices, classes, num_folds=args.n_folds, seed=args.seed)
 
         for k in range(len(gram_matrices)):
             print(
                 kernel + "-" + str(k),
                 dataset,
-                round(train_accuracies_all[:, :, k].mean(), 2),
-                round(train_accuracies_all[:, :, k].mean(axis=1).std(), 2),
-                round(valid_accuracies_all[:, :, k].mean(), 2),
-                round(valid_accuracies_all[:, :, k].mean(axis=1).std(), 2),
-                round(test_accuracies_all[:, :, k].mean(), 2),
-                round(test_accuracies_all[:, :, k].mean(axis=1).std(), 2),
+                round(train_accuracies_all[:, k].mean(), 2),
+                round(train_accuracies_all[:, k].std(), 2),
+                round(valid_accuracies_all[:, k].mean(), 2),
+                round(valid_accuracies_all[:, k].std(), 2),
+                round(test_accuracies_all[:, k].mean(), 2),
+                round(test_accuracies_all[:, k].std(), 2),
                 sep="\t"
             )
         
-        best_k_ind = np.expand_dims(valid_accuracies_all.argmax(axis=2), axis=2)
-        train_accuracies_avg = np.take_along_axis(train_accuracies_all, best_k_ind, axis=2).squeeze(axis=2)
-        valid_accuracies_avg = np.take_along_axis(valid_accuracies_all, best_k_ind, axis=2).squeeze(axis=2)
-        test_accuracies_avg = np.take_along_axis(test_accuracies_all, best_k_ind, axis=2).squeeze(axis=2)
+        best_k_ind = np.expand_dims(valid_accuracies_all.argmax(axis=1), axis=1)
+        train_accuracies_avg = np.take_along_axis(train_accuracies_all, best_k_ind, axis=1).squeeze(axis=1)
+        valid_accuracies_avg = np.take_along_axis(valid_accuracies_all, best_k_ind, axis=1).squeeze(axis=1)
+        test_accuracies_avg = np.take_along_axis(test_accuracies_all, best_k_ind, axis=1).squeeze(axis=1)
         print(
             kernel + "-avg",
             dataset,
             round(train_accuracies_avg.mean(), 2),
-            round(train_accuracies_avg.mean(axis=1).std(), 2),
+            round(train_accuracies_avg.std(), 2),
             round(valid_accuracies_avg.mean(), 2),
-            round(valid_accuracies_avg.mean(axis=1).std(), 2),
+            round(valid_accuracies_avg.std(), 2),
             round(test_accuracies_avg.mean(), 2),
-            round(test_accuracies_avg.mean(axis=1).std(), 2),
+            round(test_accuracies_avg.std(), 2),
             sep="\t"
         )
