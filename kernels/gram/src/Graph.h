@@ -1,5 +1,3 @@
-
-
 #ifndef WLFAST_GRAPH_H
 #define WLFAST_GRAPH_H
 

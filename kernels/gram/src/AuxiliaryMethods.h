@@ -1,5 +1,3 @@
-
-
 #ifndef WLFAST_AUXILIARYMETHODS_H
 #define WLFAST_AUXILIARYMETHODS_H
 
@@ -24,6 +22,10 @@ using namespace GraphLibrary;
 #include "/usr/local/include/eigen3/Eigen/Dense"
 #include "/usr/local/include/eigen3/Eigen/Sparse"
 #include "/usr/local/include/eigen3/unsupported/Eigen/src/SparseExtra/MarketIO.h"
+#endif
+
+#ifndef MAXCOLOR
+#define MAXCOLOR 0XFFFFF
 #endif
 
 namespace AuxiliaryMethods {

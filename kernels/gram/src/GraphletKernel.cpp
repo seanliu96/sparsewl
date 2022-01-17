@@ -1,5 +1,3 @@
-
-
 #include "GraphletKernel.h"
 
 namespace GraphletKernel {

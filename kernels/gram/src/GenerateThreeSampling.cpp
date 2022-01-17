@@ -1,5 +1,3 @@
-
-
 #include "GenerateThreeSampling.h"
 
 #include "AuxiliaryMethods.h"
@@ -156,7 +154,7 @@ ColorCounter GenerateThreeSampling::compute_colors(Graph &g, const uint num_iter
         }
 
         // Assign new colors.
-        coloring = coloring_temp;
+        std::swap(coloring, coloring_temp);
         h++;
     }
 
@@ -274,7 +272,7 @@ ColorCounter GenerateThreeSampling::compute_colors_simple(Graph &g, const uint n
         }
 
         // Assign new colors.
-        coloring = coloring_temp;
+        std::swap(coloring, coloring_temp);
         h++;
     }
 

@@ -1,5 +1,3 @@
-
-
 #include "ColorRefinementKernel.h"
 
 #include <set>
@@ -152,10 +150,10 @@ pair<ColorCounter, vector<uint>> ColorRefinementKernel::compute_colors(const Gra
     if (use_labels) {
         coloring = g.get_labels();
         if (coloring.size() == 0) {
-            coloring.resize(num_nodes, 0); // default label is 0
+            coloring.resize(num_nodes, 0);  // default label is 0
         }
     } else {
-        coloring.resize(num_nodes, 0); // default label is 0
+        coloring.resize(num_nodes, 0);  // default label is 0
     }
     coloring_temp = coloring;
 
@@ -183,7 +181,7 @@ pair<ColorCounter, vector<uint>> ColorRefinementKernel::compute_colors(const Gra
     color_nums.push_back(color_map.size());
 
     uint h = 1;
-    while (h <= num_iterations) {
+    while (h <= num_iterations && color_nums[h-1] <= MAXCOLOR) {
         // Iterate over all nodes.
         for (Node v = 0; v < num_nodes; ++v) {
             Labels colors;
@@ -244,7 +242,12 @@ pair<ColorCounter, vector<uint>> ColorRefinementKernel::compute_colors(const Gra
         color_nums.push_back(color_map.size());
 
         // Assign new colors.
-        coloring = coloring_temp;
+        std::swap(coloring, coloring_temp);
+        h++;
+    }
+
+    while (h <= num_iterations) {
+        color_nums.push_back(color_nums[h-1]);
         h++;
     }
 

@@ -1,5 +1,3 @@
-
-
 #include "Graph.h"
 
 namespace GraphLibrary {

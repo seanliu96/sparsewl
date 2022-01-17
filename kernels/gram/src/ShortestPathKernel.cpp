@@ -1,5 +1,3 @@
-
-
 #include "ShortestPathKernel.h"
 
 namespace ShortestPathKernel {

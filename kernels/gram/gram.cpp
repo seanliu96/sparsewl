@@ -82,6 +82,7 @@ int main(int argc, char **argv) {
                 if (it != all_datasets.end()) {
                     datasets.push_back(it->second);
                 } else {
+                    datasets.push_back(make_tuple(dataset, true, true));
                     cout << "Warning: " << dataset << " is not a valid dataset." << endl;
                 }
                 ++j;
@@ -145,14 +146,15 @@ int main(int argc, char **argv) {
                     graph_kernel.compute_gram_matrices(n_iters, use_labels, use_edge_labels, true, false);
                 high_resolution_clock::time_point t2 = high_resolution_clock::now();
                 auto duration = duration_cast<seconds>(t2 - t1).count();
-                cout << kernel + to_string(k) + "-" + to_string(n_iters) << "\t" << ds << "\t" << duration << " seconds"
-                     << endl;
+                cout << kernel + to_string(k) + "-" + to_string(n_iters) << "\t" << ds << "\t" << duration << " seconds" << endl;
 
-                for (uint i = 0; i <= n_iters; ++i) {
+                for (uint i = 0; i < gms.size(); ++i) {
                     AuxiliaryMethods::write_libsvm(
                         gms[i], classes[d],
                         gram_dir + "/" + ds + "__" + kernel + to_string(k) + "_" + to_string(i) + ".gram");
                 }
+                gms.clear();
+                gms.shrink_to_fit(); // release memory
             } else if (kernel.compare("WLOA") == 0) {
                 ColorRefinement::ColorRefinementKernel graph_kernel(gdb);
 
@@ -163,11 +165,13 @@ int main(int argc, char **argv) {
                 auto duration = duration_cast<seconds>(t2 - t1).count();
                 cout << kernel + "-" + to_string(n_iters) << "\t" << ds << "\t" << duration << " seconds" << endl;
 
-                for (uint i = 1; i <= n_iters; ++i) {
+                for (uint i = 1; i < gms.size(); ++i) {
                     AuxiliaryMethods::write_libsvm(
                         gms[i], classes[d],
                         gram_dir + "/" + ds + "__" + kernel + to_string(k) + "_" + to_string(i) + ".gram");
                 }
+                gms.clear();
+                gms.shrink_to_fit(); // release memory
             } else if (kernel.compare("SP") == 0) {
                 ShortestPathKernel::ShortestPathKernel graph_kernel(gdb);
 
@@ -179,6 +183,7 @@ int main(int argc, char **argv) {
 
                 AuxiliaryMethods::write_libsvm(gm, classes[d],
                                                gram_dir + "/" + ds + "__" + kernel + "_" + to_string(0) + ".gram");
+                gm = GramMatrix(); // release memory
             } else if (kernel.compare("GR") == 0) {
                 GraphletKernel::GraphletKernel graph_kernel(gdb);
 
@@ -190,6 +195,7 @@ int main(int argc, char **argv) {
 
                 AuxiliaryMethods::write_libsvm(gm, classes[d],
                                                gram_dir + "/" + ds + "__" + kernel + "_" + to_string(0) + ".gram");
+                gm = GramMatrix(); // release memory
             }
         } else if (k == 2) {
             if (kernel.find("WL") != string::npos) {
@@ -212,14 +218,15 @@ int main(int argc, char **argv) {
                     graph_kernel.compute_gram_matrices(n_iters, use_labels, use_edge_labels, algorithm, true, true);
                 high_resolution_clock::time_point t2 = high_resolution_clock::now();
                 auto duration = duration_cast<seconds>(t2 - t1).count();
-                cout << kernel + to_string(k) + "-" + to_string(n_iters) << "\t" << ds << "\t" << duration << " seconds"
-                     << endl;
+                cout << kernel + to_string(k) + "-" + to_string(n_iters) << "\t" << ds << "\t" << duration << " seconds" << endl;
 
-                for (uint i = 0; i <= n_iters; ++i) {
+                for (uint i = 0; i < gms.size(); ++i) {
                     AuxiliaryMethods::write_libsvm(
                         gms[i], classes[d],
                         gram_dir + "/" + ds + "__" + kernel + to_string(k) + "_" + to_string(i) + ".gram");
                 }
+                gms.clear();
+                gms.shrink_to_fit(); // release memory
             }
         } else if (k == 3) {
             if (kernel.find("WL") != string::npos) {
@@ -242,14 +249,15 @@ int main(int argc, char **argv) {
                     graph_kernel.compute_gram_matrices(n_iters, use_labels, use_edge_labels, algorithm, true, true);
                 high_resolution_clock::time_point t2 = high_resolution_clock::now();
                 auto duration = duration_cast<seconds>(t2 - t1).count();
-                cout << kernel + to_string(k) + "-" + to_string(n_iters) << "\t" << ds << "\t" << duration << " seconds"
-                     << endl;
+                cout << kernel + to_string(k) + "-" + to_string(n_iters) << "\t" << ds << "\t" << duration << " seconds" << endl;
 
-                for (uint i = 0; i <= n_iters; ++i) {
+                for (uint i = 0; i < gms.size(); ++i) {
                     AuxiliaryMethods::write_libsvm(
                         gms[i], classes[d],
                         gram_dir + "/" + ds + "__" + kernel + to_string(k) + "_" + to_string(i) + ".gram");
                 }
+                gms.clear();
+                gms.shrink_to_fit(); // release memory
             }
         }
     }

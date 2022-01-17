@@ -230,7 +230,7 @@ pair<ColorCounter, vector<uint>> GenerateTwo::compute_colors(const Graph &g, con
     color_nums.push_back(color_map.size());
 
     uint h = 1;
-    while (h <= num_iterations) {
+    while (h <= num_iterations && color_nums[h-1] < MAXCOLOR) {
         // Iterate over all nodes.
         for (Node v = 0; v < num_nodes; ++v) {
             Labels colors_local;
@@ -313,15 +313,12 @@ pair<ColorCounter, vector<uint>> GenerateTwo::compute_colors(const Graph &g, con
                 colors_local.push_back(c);
             }
 
-            Label ll = coloring[v];
-            ll = AuxiliaryMethods::pairing(ll, color_map_1.find(coloring[v])->second);
-            ll = AuxiliaryMethods::pairing(ll, color_map_2.find(coloring[v])->second);
-
+            Label &ll = coloring[v];
             if ((algorithm == "localp" or algorithm == "localpc") and num_iterations == h) {
-                colors_local.push_back(ll);
-            } else {
-                colors_local.push_back(coloring[v]);
+                ll = AuxiliaryMethods::pairing(ll, color_map_1.find(coloring[v])->second);
+                ll = AuxiliaryMethods::pairing(ll, color_map_2.find(coloring[v])->second);
             }
+            colors_local.push_back(ll);
 
             // Compute new label using composition of pairing function of Matthew Szudzik to map two integers to on
             // integer.
@@ -348,72 +345,77 @@ pair<ColorCounter, vector<uint>> GenerateTwo::compute_colors(const Graph &g, con
         color_nums.push_back(color_map.size());
 
         // Assign new colors.
-        coloring = coloring_temp;
+        std::swap(coloring, coloring_temp);
         h++;
 
-        unordered_map<Node, bool> check_1;
-        unordered_map<Node, bool> check_2;
+        // unordered_map<Node, bool> check_1;
+        // unordered_map<Node, bool> check_2;
 
-        if ((algorithm == "localp" or algorithm == "localpc") and h == num_iterations) {
-            for (Node v = 0; v < num_nodes; ++v) {
-                Nodes neighbors(tuple_graph.get_neighbours(v));
+        // if ((algorithm == "localp" or algorithm == "localpc") and h == num_iterations) {
+        //     for (Node v = 0; v < num_nodes; ++v) {
+        //         Nodes neighbors(tuple_graph.get_neighbours(v));
 
-                for (const Node &n : neighbors) {
-                    const auto t = edge_labels.find(make_tuple(v, n));
+        //         for (const Node &n : neighbors) {
+        //             const auto t = edge_labels.find(make_tuple(v, n));
 
-                    TwoTuple p = node_to_two_tuple.find(n)->second;
-                    Node a = std::get<0>(p);
-                    Node b = std::get<1>(p);
+        //             TwoTuple p = node_to_two_tuple.find(n)->second;
+        //             Node a = std::get<0>(p);
+        //             Node b = std::get<1>(p);
 
-                    if (t->second == 1) {
-                        Label l = b;
-                        l = AuxiliaryMethods::pairing(l, 1);
-                        l = AuxiliaryMethods::pairing(l, coloring[n]);
+        //             if (t->second == 1) {
+        //                 Label l = b;
+        //                 l = AuxiliaryMethods::pairing(l, 1);
+        //                 l = AuxiliaryMethods::pairing(l, coloring[n]);
 
-                        Label e = a;
-                        e = AuxiliaryMethods::pairing(e, b);
-                        e = AuxiliaryMethods::pairing(e, 1);
-                        const auto is = check_1.find(e);
+        //                 Label e = a;
+        //                 e = AuxiliaryMethods::pairing(e, b);
+        //                 e = AuxiliaryMethods::pairing(e, 1);
+        //                 const auto is = check_1.find(e);
 
-                        if (is == check_1.end()) {
-                            const auto it = color_map_1.find(l);
+        //                 if (is == check_1.end()) {
+        //                     const auto it = color_map_1.find(l);
 
-                            if (it == color_map_1.end()) {
-                                color_map_1.insert({{l, 1}});
-                            } else {
-                                it->second++;
-                            }
+        //                     if (it == color_map_1.end()) {
+        //                         color_map_1.insert({{l, 1}});
+        //                     } else {
+        //                         it->second++;
+        //                     }
 
-                            check_1.insert({{e, true}});
-                        }
-                    }
+        //                     check_1.insert({{e, true}});
+        //                 }
+        //             }
 
-                    if (t->second == 2) {
-                        Label l = a;
+        //             if (t->second == 2) {
+        //                 Label l = a;
 
-                        l = AuxiliaryMethods::pairing(l, 2);
-                        l = AuxiliaryMethods::pairing(l, coloring[n]);
+        //                 l = AuxiliaryMethods::pairing(l, 2);
+        //                 l = AuxiliaryMethods::pairing(l, coloring[n]);
 
-                        Label e = a;
-                        e = AuxiliaryMethods::pairing(e, b);
-                        e = AuxiliaryMethods::pairing(e, 2);
-                        const auto is = check_2.find(e);
+        //                 Label e = a;
+        //                 e = AuxiliaryMethods::pairing(e, b);
+        //                 e = AuxiliaryMethods::pairing(e, 2);
+        //                 const auto is = check_2.find(e);
 
-                        if (is == check_2.end()) {
-                            const auto it = color_map_2.find(l);
+        //                 if (is == check_2.end()) {
+        //                     const auto it = color_map_2.find(l);
 
-                            if (it == color_map_2.end()) {
-                                color_map_2.insert({{l, 1}});
-                            } else {
-                                it->second++;
-                            }
+        //                     if (it == color_map_2.end()) {
+        //                         color_map_2.insert({{l, 1}});
+        //                     } else {
+        //                         it->second++;
+        //                     }
 
-                            check_2.insert({{e, true}});
-                        }
-                    }
-                }
-            }
-        }
+        //                     check_2.insert({{e, true}});
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+    }
+
+    while (h <= num_iterations) {
+        color_nums.push_back(color_nums[h-1]);
+        h++;
     }
 
     return std::make_pair(color_map, color_nums);
@@ -535,7 +537,7 @@ pair<ColorCounter, vector<uint>> GenerateTwo::compute_colors_simple(const Graph 
     color_nums.push_back(color_map.size());
 
     uint h = 1;
-    while (h <= num_iterations) {
+    while (h <= num_iterations && color_nums[h-1] < MAXCOLOR) {
         // Iterate over all nodes.
         for (Node v = 0; v < num_nodes; ++v) {
             Labels colors_local;
@@ -646,7 +648,7 @@ pair<ColorCounter, vector<uint>> GenerateTwo::compute_colors_simple(const Graph 
         color_nums.push_back(color_map.size());
 
         // Assign new colors.
-        coloring = coloring_temp;
+        std::swap(coloring, coloring_temp);
         h++;
 
         unordered_map<Label, bool> check_1;
@@ -712,6 +714,11 @@ pair<ColorCounter, vector<uint>> GenerateTwo::compute_colors_simple(const Graph 
                 }
             }
         }
+    }
+
+    while (h <= num_iterations) {
+        color_nums.push_back(color_nums[h-1]);
+        h++;
     }
 
     return std::make_pair(color_map, color_nums);
