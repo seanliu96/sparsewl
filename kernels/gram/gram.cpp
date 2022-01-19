@@ -168,7 +168,7 @@ int main(int argc, char **argv) {
                 for (uint i = 1; i < gms.size(); ++i) {
                     AuxiliaryMethods::write_libsvm(
                         gms[i], classes[d],
-                        gram_dir + "/" + ds + "__" + kernel + to_string(k) + "_" + to_string(i) + ".gram");
+                        gram_dir + "/" + ds + "__" + kernel + "_" + to_string(i) + ".gram");
                 }
                 gms.clear();
                 gms.shrink_to_fit(); // release memory

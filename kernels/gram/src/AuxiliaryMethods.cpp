@@ -291,7 +291,10 @@ void write_libsvm(const GramMatrix &gram_matrix, const vector<int> classes, stri
     }
 }
 
-Label pairing(const Label a, const Label b) { return a >= b ? a * a + a + b : a + b * b; }
+Label pairing(const Label a, const Label b) {
+    Label c = a >= b ? a * a + a + b : a + b * b;
+    return c % MAXCOLOR; 
+}
 
 Label pairing(const vector<Label> labels) {
     Label new_label = labels.size();

@@ -230,7 +230,7 @@ pair<ColorCounter, vector<uint>> GenerateTwo::compute_colors(const Graph &g, con
     color_nums.push_back(color_map.size());
 
     uint h = 1;
-    while (h <= num_iterations && color_nums[h-1] < MAXCOLOR) {
+    while (h <= num_iterations && color_nums[h-1] < MAXNUMCOLOR) {
         // Iterate over all nodes.
         for (Node v = 0; v < num_nodes; ++v) {
             Labels colors_local;
@@ -537,7 +537,7 @@ pair<ColorCounter, vector<uint>> GenerateTwo::compute_colors_simple(const Graph 
     color_nums.push_back(color_map.size());
 
     uint h = 1;
-    while (h <= num_iterations && color_nums[h-1] < MAXCOLOR) {
+    while (h <= num_iterations && color_nums[h-1] < MAXNUMCOLOR) {
         // Iterate over all nodes.
         for (Node v = 0; v < num_nodes; ++v) {
             Labels colors_local;

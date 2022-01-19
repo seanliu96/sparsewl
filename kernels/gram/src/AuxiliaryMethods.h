@@ -25,7 +25,11 @@ using namespace GraphLibrary;
 #endif
 
 #ifndef MAXCOLOR
-#define MAXCOLOR 0XFFFFF
+#define MAXCOLOR 1000000007
+#endif
+
+#ifndef MAXNUMCOLOR
+#define MAXNUMCOLOR 0XFFFF
 #endif
 
 namespace AuxiliaryMethods {
