@@ -48,14 +48,21 @@ def kernel_svm_cv(all_matrices, classes, num_folds=10, C=None, seed=None):
 
     for j, (train_index, test_index) in enumerate(kf.split(classes)):
         train_index, valid_index = train_test_split(train_index, test_size=0.1, random_state=seed, shuffle=True)
-        
-        test_matrices = [gram_matrix[test_index, :][:, train_index] for gram_matrix in all_matrices]
+        if all_matrices[0].shape[0] == all_matrices[0].shape[1]:
+            feat_index = train_index
+        else:
+            feat_index = []
+            for factor in range(1, 1 + all_matrices[0].shape[1] // all_matrices[0].shape[0]):
+                feat_index.append(train_index * factor)
+            feat_index = np.concatenate(feat_index)
+        print(feat_index.shape)
+        test_matrices = [gram_matrix[test_index, :][:, feat_index] for gram_matrix in all_matrices]
         test_classes = classes[test_index]
 
         # Determine hyperparameters
         for k, gram_matrix in enumerate(all_matrices):
-            train = gram_matrix[train_index, :][:, train_index]
-            valid = gram_matrix[valid_index, :][:, train_index]
+            train = gram_matrix[train_index, :][:, feat_index]
+            valid = gram_matrix[valid_index, :][:, feat_index]
 
             train_classes = classes[train_index]
             valid_classes = classes[valid_index]
@@ -94,14 +101,21 @@ def kernel_svm_nips(all_matrices, classes, num_repetitions=10, num_folds=10, C=N
 
         for j, (train_index, test_index) in enumerate(kf.split(classes)):
             train_index, valid_index = train_test_split(train_index, test_size=0.1, random_state=i, shuffle=True)
-            
-            test_matrices = [gram_matrix[test_index, :][:, train_index] for gram_matrix in all_matrices]
+            if all_matrices[0].shape[0] == all_matrices[0].shape[1]:
+                feat_index = train_index
+            else:
+                feat_index = []
+                for factor in range(1, 1 + all_matrices[0].shape[1] // all_matrices[0].shape[0]):
+                    feat_index.append(train_index * factor)
+                feat_index = np.concatenate(feat_index)
+            print(feat_index.shape)
+            test_matrices = [gram_matrix[test_index, :][:, feat_index] for gram_matrix in all_matrices]
             test_classes = classes[test_index]
 
             # Determine hyperparameters
             for k, gram_matrix in enumerate(all_matrices):
-                train = gram_matrix[train_index, :][:, train_index]
-                valid = gram_matrix[valid_index, :][:, train_index]
+                train = gram_matrix[train_index, :][:, feat_index]
+                valid = gram_matrix[valid_index, :][:, feat_index]
 
                 train_classes = classes[train_index]
                 valid_classes = classes[valid_index]

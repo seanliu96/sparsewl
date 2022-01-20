@@ -98,9 +98,16 @@ if __name__ == "__main__":
             train_index = train_index.indices
             valid_index = valid_index.indices
             test_index = test_index.indices
-            train_matrices = [gram_matrix[train_index][:, train_index] for gram_matrix in gram_matrices]
-            valid_matrices = [gram_matrix[valid_index][:, train_index] for gram_matrix in gram_matrices]
-            test_matrices = [gram_matrix[test_index][:, train_index] for gram_matrix in gram_matrices]
+            if gram_matrices[0].shape[0] == gram_matrices[0].shape[1]:
+                feat_index = train_index
+            else:
+                feat_index = []
+                for factor in range(1, 1 + gram_matrices[0].shape[1] // gram_matrices[0].shape[0]):
+                    feat_index.append(train_index * factor)
+                feat_index = np.concatenate(feat_index)
+            train_matrices = [gram_matrix[train_index][:, feat_index] for gram_matrix in gram_matrices]
+            valid_matrices = [gram_matrix[valid_index][:, feat_index] for gram_matrix in gram_matrices]
+            test_matrices = [gram_matrix[test_index][:, feat_index] for gram_matrix in gram_matrices]
 
             # num_iterations
             train_accuracies, valid_accuracies, test_accuracies = \
