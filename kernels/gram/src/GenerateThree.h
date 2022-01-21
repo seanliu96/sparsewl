@@ -25,6 +25,8 @@ class GenerateThree {
 
     Graph generate_local_graph(const Graph &g, const bool use_labels, const bool use_edge_labels);
 
+    Graph generate_local_graph_connected(const Graph &g, const bool use_labels, const bool use_edge_labels);
+
     Graph generate_global_graph(const Graph &g, const bool use_labels, const bool use_edge_labels);
 
     Graph generate_global_graph_malkin(const Graph &g, const bool use_labels, const bool use_edge_labels);

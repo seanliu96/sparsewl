@@ -853,7 +853,7 @@ Graph GenerateTwo::generate_local_graph_connected(const Graph &g, const bool use
     Node num_two_tuples = 0;
     for (Node i = 0; i < num_nodes; ++i) {
         for (Node j = 0; j < num_nodes; ++j) {
-            if (g.has_edge(i, j) or (i == j)) {
+            if ((i == j) or g.has_edge(i, j)) {
                 two_tuple_graph.add_node();
 
                 // Map each pair to node in two set graph and also inverse.

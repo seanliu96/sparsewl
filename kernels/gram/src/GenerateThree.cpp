@@ -116,6 +116,8 @@ pair<ColorCounter, vector<uint>> GenerateThree::compute_colors(const Graph &g, c
     Graph tuple_graph(false);
     if (algorithm == "local") {
         tuple_graph = generate_local_graph(g, use_labels, use_edge_labels);
+    } else if (algorithm == "localc") {
+        tuple_graph = generate_local_graph_connected(g, use_labels, use_edge_labels);
     } else if (algorithm == "wl") {
         tuple_graph = generate_global_graph(g, use_labels, use_edge_labels);
     } else if (algorithm == "malkin") {
@@ -474,6 +476,8 @@ pair<ColorCounter, vector<uint>> GenerateThree::compute_colors_simple(const Grap
     Graph tuple_graph(false);
     if (algorithm == "local" or algorithm == "localp") {
         tuple_graph = generate_local_graph(g, use_labels, use_edge_labels);
+    } else if (algorithm == "localc" or algorithm == "localpc") {
+        tuple_graph = generate_local_graph_connected(g, use_labels, use_edge_labels);
     } else if (algorithm == "wl") {
         tuple_graph = generate_global_graph(g, use_labels, use_edge_labels);
     } else if (algorithm == "malkin") {
@@ -922,6 +926,141 @@ Graph GenerateThree::generate_local_graph(const Graph &g, const bool use_labels,
                 Label new_color_1 = AuxiliaryMethods::pairing(AuxiliaryMethods::pairing(c_i, c_j), c_k);
                 Label new_color = AuxiliaryMethods::pairing(new_color_0, new_color_1);
                 tuple_labels.push_back(new_color);
+            }
+        }
+    }
+
+    for (Node i = 0; i < num_three_tuples; ++i) {
+        // Get nodes of original graph corresponding to two tuple i.
+        ThreeTuple p = node_to_three_tuple.find(i)->second;
+        Node v = std::get<0>(p);
+        Node w = std::get<1>(p);
+        Node u = std::get<2>(p);
+
+        // Exchange first node.
+        Nodes v_neighbors = g.get_neighbours(v);
+        for (const auto &v_n : v_neighbors) {
+            unordered_map<ThreeTuple, Node>::const_iterator t;
+            t = three_tuple_to_node.find(make_tuple(v_n, w, u));
+
+            three_tuple_graph.add_edge(i, t->second);
+            edge_type.insert({{make_tuple(i, t->second), 1}});
+            vertex_id.insert({{make_tuple(i, t->second), v_n}});
+            local.insert({{make_tuple(i, t->second), 1}});
+        }
+
+        // Exchange second node.
+        Nodes w_neighbors = g.get_neighbours(w);
+        for (const auto &w_n : w_neighbors) {
+            unordered_map<ThreeTuple, Node>::const_iterator t;
+            t = three_tuple_to_node.find(make_tuple(v, w_n, u));
+
+            three_tuple_graph.add_edge(i, t->second);
+            edge_type.insert({{make_tuple(i, t->second), 2}});
+            vertex_id.insert({{make_tuple(i, t->second), w_n}});
+            local.insert({{make_tuple(i, t->second), 1}});
+        }
+
+        // Exchange third node.
+        Nodes u_neighbors = g.get_neighbours(u);
+        for (const auto &u_n : u_neighbors) {
+            unordered_map<ThreeTuple, Node>::const_iterator t;
+            t = three_tuple_to_node.find(make_tuple(v, w, u_n));
+
+            three_tuple_graph.add_edge(i, t->second);
+            edge_type.insert({{make_tuple(i, t->second), 3}});
+            vertex_id.insert({{make_tuple(i, t->second), u_n}});
+            local.insert({{make_tuple(i, t->second), 1}});
+        }
+    }
+
+    three_tuple_graph.set_edge_labels(edge_type);
+    three_tuple_graph.set_labels(tuple_labels);
+    three_tuple_graph.set_vertex_id(vertex_id);
+    three_tuple_graph.set_local(local);
+    three_tuple_graph.set_node_to_three_tuple(node_to_three_tuple);
+
+    return three_tuple_graph;
+}
+
+Graph GenerateThree::generate_local_graph_connected(const Graph &g, const bool use_labels, const bool use_edge_labels) {
+    size_t num_nodes = g.get_num_nodes();
+    // New graph to be generated.
+    Graph three_tuple_graph(false);
+
+    // Maps node in two set graph to correponding two set.
+    unordered_map<Node, ThreeTuple> node_to_three_tuple;
+    // Inverse of the above map.
+    unordered_map<ThreeTuple, Node> three_tuple_to_node;
+    EdgeLabels edge_type;
+    // Manages vertex ids
+    EdgeLabels vertex_id;
+    EdgeLabels local;
+
+    // Create a node for each two set.
+    Labels labels;
+    Labels tuple_labels;
+    if (use_labels) {
+        labels = g.get_labels();
+    }
+
+    size_t num_three_tuples = 0;
+    for (Node i = 0; i < num_nodes; ++i) {
+        for (Node j = 0; j < num_nodes; ++j) {
+            for (Node k = 0; k < num_nodes; ++k) {
+                uint flag = 0;
+                flag += (i == j);
+                flag += (j == k);
+                flag += g.has_edge(i, j);
+                flag += g.has_edge(j, k);
+                flag += g.has_edge(i, k);
+                if (flag >= 3) {
+                    three_tuple_graph.add_node();
+
+                    node_to_three_tuple.insert({{num_three_tuples, make_tuple(i, j, k)}});
+                    three_tuple_to_node.insert({{make_tuple(i, j, k), num_three_tuples}});
+                    num_three_tuples++;
+
+                    Label c_i = 1;
+                    Label c_j = 2;
+                    Label c_k = 3;
+
+                    if (use_labels) {
+                        c_i = AuxiliaryMethods::pairing(labels[i] + 1, c_i);
+                        c_j = AuxiliaryMethods::pairing(labels[j] + 1, c_j);
+                        c_k = AuxiliaryMethods::pairing(labels[k] + 1, c_k);
+                    }
+
+                    Label a, b, c;
+                    if (g.has_edge(i, j)) {
+                        a = 1;
+                    } else if (not g.has_edge(i, j)) {
+                        a = 2;
+                    } else {
+                        a = 3;
+                    }
+
+                    if (g.has_edge(i, k)) {
+                        b = 1;
+                    } else if (not g.has_edge(i, k)) {
+                        b = 2;
+                    } else {
+                        b = 3;
+                    }
+
+                    if (g.has_edge(j, k)) {
+                        c = 1;
+                    } else if (not g.has_edge(j, k)) {
+                        c = 2;
+                    } else {
+                        c = 3;
+                    }
+
+                    Label new_color_0 = AuxiliaryMethods::pairing(AuxiliaryMethods::pairing(a, b), c);
+                    Label new_color_1 = AuxiliaryMethods::pairing(AuxiliaryMethods::pairing(c_i, c_j), c_k);
+                    Label new_color = AuxiliaryMethods::pairing(new_color_0, new_color_1);
+                    tuple_labels.push_back(new_color);
+                }
             }
         }
     }

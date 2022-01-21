@@ -25,8 +25,6 @@ class GenerateTwo {
 
     GramMatrix generate_local_sparse_am(const Graph &g, const bool use_labels, const bool use_edge_labels);
 
-    Graph generate_dummy_graph(const Graph &g, const bool use_labels, const bool use_edge_labels);
-
     Graph generate_local_graph(const Graph &g, const bool use_labels, const bool use_edge_labels);
 
     Graph generate_local_graph_connected(const Graph &g, const bool use_labels, const bool use_edge_labels);

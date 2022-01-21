@@ -208,6 +208,10 @@ int main(int argc, char **argv) {
                     algorithm = "local";
                 } else if (kernel.compare("LWLP") == 0) {
                     algorithm = "localp";
+                } else if (kernel.compare("LWLC") == 0) {
+                    algorithm = "localc";
+                } else if (kernel.compare("LWLPC") == 0) {
+                    algorithm = "localpc";
                 } else {
                     throw std::invalid_argument("Error: unsupported kernel " + kernel);
                 }
@@ -239,6 +243,10 @@ int main(int argc, char **argv) {
                     algorithm = "local";
                 } else if (kernel.compare("LWLP") == 0) {
                     algorithm = "localp";
+                } else if (kernel.compare("LWLC") == 0) {
+                    algorithm = "localc";
+                } else if (kernel.compare("LWLPC") == 0) {
+                    algorithm = "localpc";
                 } else {
                     throw std::invalid_argument("Error: unsupported kernel " + kernel);
                 }
