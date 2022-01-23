@@ -150,13 +150,13 @@ pair<ColorCounter, vector<uint>> GenerateTwo::compute_colors(const Graph &g, con
             Nodes neighbors(tuple_graph.get_neighbours(v));
 
             for (const Node &n : neighbors) {
-                const auto t = edge_labels.find(make_tuple(v, n));
+                const auto it = edge_labels.find(make_tuple(v, n));
 
                 TwoTuple p = node_to_two_tuple.find(n)->second;
                 Node a = std::get<0>(p);
                 Node b = std::get<1>(p);
 
-                if (t->second == 1) {
+                if (it->second == 1) {
                     Label l = b;
                     l = AuxiliaryMethods::pairing(l, 1);
                     l = AuxiliaryMethods::pairing(l, coloring[n]);
@@ -179,7 +179,7 @@ pair<ColorCounter, vector<uint>> GenerateTwo::compute_colors(const Graph &g, con
                     }
                 }
 
-                if (t->second == 2) {
+                if (it->second == 2) {
                     Label l = a;
 
                     l = AuxiliaryMethods::pairing(l, 2);
@@ -230,7 +230,7 @@ pair<ColorCounter, vector<uint>> GenerateTwo::compute_colors(const Graph &g, con
     color_nums.push_back(color_map.size());
 
     uint h = 1;
-    while (h <= num_iterations && color_nums[h-1] < MAXNUMCOLOR) {
+    while (h <= num_iterations && color_nums[h - 1] < MAXNUMCOLOR) {
         // Iterate over all nodes.
         for (Node v = 0; v < num_nodes; ++v) {
             Labels colors_local;
@@ -253,8 +253,8 @@ pair<ColorCounter, vector<uint>> GenerateTwo::compute_colors(const Graph &g, con
             for (const Node &n : neighbors) {
                 Label l;
 
-                const auto t = edge_labels.find(make_tuple(v, n));
-                l = AuxiliaryMethods::pairing(coloring[n], t->second);
+                const auto it = edge_labels.find(make_tuple(v, n));
+                l = AuxiliaryMethods::pairing(coloring[n], it->second);
 
                 const auto type = local.find(make_tuple(v, n));
 
@@ -356,13 +356,13 @@ pair<ColorCounter, vector<uint>> GenerateTwo::compute_colors(const Graph &g, con
         //         Nodes neighbors(tuple_graph.get_neighbours(v));
 
         //         for (const Node &n : neighbors) {
-        //             const auto t = edge_labels.find(make_tuple(v, n));
+        //             const auto it = edge_labels.find(make_tuple(v, n));
 
         //             TwoTuple p = node_to_two_tuple.find(n)->second;
         //             Node a = std::get<0>(p);
         //             Node b = std::get<1>(p);
 
-        //             if (t->second == 1) {
+        //             if (it->second == 1) {
         //                 Label l = b;
         //                 l = AuxiliaryMethods::pairing(l, 1);
         //                 l = AuxiliaryMethods::pairing(l, coloring[n]);
@@ -385,7 +385,7 @@ pair<ColorCounter, vector<uint>> GenerateTwo::compute_colors(const Graph &g, con
         //                 }
         //             }
 
-        //             if (t->second == 2) {
+        //             if (it->second == 2) {
         //                 Label l = a;
 
         //                 l = AuxiliaryMethods::pairing(l, 2);
@@ -414,7 +414,7 @@ pair<ColorCounter, vector<uint>> GenerateTwo::compute_colors(const Graph &g, con
     }
 
     while (h <= num_iterations) {
-        color_nums.push_back(color_nums[h-1]);
+        color_nums.push_back(color_nums[h - 1]);
         h++;
     }
 
@@ -458,13 +458,13 @@ pair<ColorCounter, vector<uint>> GenerateTwo::compute_colors_simple(const Graph 
             Nodes neighbors(tuple_graph.get_neighbours(v));
 
             for (const Node &n : neighbors) {
-                const auto t = edge_labels.find(make_tuple(v, n));
+                const auto it = edge_labels.find(make_tuple(v, n));
 
                 TwoTuple p = node_to_two_tuple.find(n)->second;
                 Node a = std::get<0>(p);
                 Node b = std::get<1>(p);
 
-                if (t->second == 1) {
+                if (it->second == 1) {
                     Label l = b;
                     l = AuxiliaryMethods::pairing(l, 1);
                     l = AuxiliaryMethods::pairing(l, coloring[n]);
@@ -487,7 +487,7 @@ pair<ColorCounter, vector<uint>> GenerateTwo::compute_colors_simple(const Graph 
                     }
                 }
 
-                if (t->second == 2) {
+                if (it->second == 2) {
                     Label l = a;
                     l = AuxiliaryMethods::pairing(l, 2);
                     l = AuxiliaryMethods::pairing(l, coloring[n]);
@@ -537,7 +537,7 @@ pair<ColorCounter, vector<uint>> GenerateTwo::compute_colors_simple(const Graph 
     color_nums.push_back(color_map.size());
 
     uint h = 1;
-    while (h <= num_iterations && color_nums[h-1] < MAXNUMCOLOR) {
+    while (h <= num_iterations && color_nums[h - 1] < MAXNUMCOLOR) {
         // Iterate over all nodes.
         for (Node v = 0; v < num_nodes; ++v) {
             Labels colors_local;
@@ -659,13 +659,13 @@ pair<ColorCounter, vector<uint>> GenerateTwo::compute_colors_simple(const Graph 
                 Nodes neighbors(tuple_graph.get_neighbours(v));
 
                 for (const Node &n : neighbors) {
-                    const auto t = edge_labels.find(make_tuple(v, n));
+                    const auto it = edge_labels.find(make_tuple(v, n));
 
                     TwoTuple p = node_to_two_tuple.find(n)->second;
                     Node a = std::get<0>(p);
                     Node b = std::get<1>(p);
 
-                    if (t->second == 1) {
+                    if (it->second == 1) {
                         Label l = b;
                         l = AuxiliaryMethods::pairing(l, 1);
                         l = AuxiliaryMethods::pairing(l, coloring[n]);
@@ -688,7 +688,7 @@ pair<ColorCounter, vector<uint>> GenerateTwo::compute_colors_simple(const Graph 
                         }
                     }
 
-                    if (t->second == 2) {
+                    if (it->second == 2) {
                         Label l = a;
 
                         l = AuxiliaryMethods::pairing(l, 2);
@@ -717,7 +717,7 @@ pair<ColorCounter, vector<uint>> GenerateTwo::compute_colors_simple(const Graph 
     }
 
     while (h <= num_iterations) {
-        color_nums.push_back(color_nums[h-1]);
+        color_nums.push_back(color_nums[h - 1]);
         h++;
     }
 
@@ -751,14 +751,14 @@ Graph GenerateTwo::generate_local_graph(const Graph &g, const bool use_labels, c
         edge_labels = g.get_edge_labels();
     }
 
-    Node num_two_tuples = 0;
+    size_t num_two_tuples = 0;
     for (Node i = 0; i < num_nodes; ++i) {
         for (Node j = 0; j < num_nodes; ++j) {
             two_tuple_graph.add_node();
-
+            TwoTuple two_tuple = make_tuple(i, j);
             // Map each pair to node in two set graph and also inverse.
-            node_to_two_tuple.insert({{num_two_tuples, make_tuple(i, j)}});
-            two_tuple_to_node.insert({{make_tuple(i, j), num_two_tuples}});
+            node_to_two_tuple.insert({{num_two_tuples, two_tuple}});
+            two_tuple_to_node.insert({{two_tuple, num_two_tuples}});
             num_two_tuples++;
 
             Label c_i = 1;
@@ -771,7 +771,7 @@ Graph GenerateTwo::generate_local_graph(const Graph &g, const bool use_labels, c
             Label c;
             if (g.has_edge(i, j)) {
                 if (use_edge_labels) {
-                    auto s = edge_labels.find(make_tuple(i, j));
+                    auto s = edge_labels.find(two_tuple);
                     c = AuxiliaryMethods::pairing(3, s->second);
                 } else {
                     c = 3;
@@ -796,21 +796,21 @@ Graph GenerateTwo::generate_local_graph(const Graph &g, const bool use_labels, c
         // Exchange first node.
         Nodes v_neighbors = g.get_neighbours(v);
         for (Node v_n : v_neighbors) {
-            unordered_map<TwoTuple, Node>::const_iterator t = two_tuple_to_node.find(make_tuple(v_n, w));
-            two_tuple_graph.add_edge(i, t->second);
-            edge_type.insert({{make_tuple(i, t->second), 1}});
-            vertex_id.insert({{make_tuple(i, t->second), v_n}});
-            local.insert({{make_tuple(i, t->second), 1}});
+            const auto it = two_tuple_to_node.find(make_tuple(v_n, w));
+            two_tuple_graph.add_edge(i, it->second);
+            edge_type.insert({{make_tuple(i, it->second), 1}});
+            vertex_id.insert({{make_tuple(i, it->second), v_n}});
+            local.insert({{make_tuple(i, it->second), 1}});
         }
 
         // Exchange second node.
         Nodes w_neighbors = g.get_neighbours(w);
         for (Node w_n : w_neighbors) {
-            unordered_map<TwoTuple, Node>::const_iterator t = two_tuple_to_node.find(make_tuple(v, w_n));
-            two_tuple_graph.add_edge(i, t->second);
-            edge_type.insert({{make_tuple(i, t->second), 2}});
-            vertex_id.insert({{make_tuple(i, t->second), w_n}});
-            local.insert({{make_tuple(i, t->second), 1}});
+            const auto it = two_tuple_to_node.find(make_tuple(v, w_n));
+            two_tuple_graph.add_edge(i, it->second);
+            edge_type.insert({{make_tuple(i, it->second), 2}});
+            vertex_id.insert({{make_tuple(i, it->second), w_n}});
+            local.insert({{make_tuple(i, it->second), 1}});
         }
     }
 
@@ -850,15 +850,35 @@ Graph GenerateTwo::generate_local_graph_connected(const Graph &g, const bool use
         edge_labels = g.get_edge_labels();
     }
 
-    Node num_two_tuples = 0;
+    size_t num_two_tuples = 0;
+    for (Node i = 0; i < num_nodes; ++i) {
+        two_tuple_graph.add_node();
+        TwoTuple two_tuple = make_tuple(i, i);
+        // Map each pair to node in two set graph and also inverse.
+        node_to_two_tuple.insert({{num_two_tuples, two_tuple}});
+        two_tuple_to_node.insert({{two_tuple, num_two_tuples}});
+        num_two_tuples++;
+
+        Label c_i = 1;
+        Label c_j = 2;
+        if (use_labels) {
+            c_i = AuxiliaryMethods::pairing(labels[i] + 1, c_i);
+            c_j = AuxiliaryMethods::pairing(labels[i] + 1, c_j);
+        }
+
+        Label c = 1;
+        Label new_color = AuxiliaryMethods::pairing(AuxiliaryMethods::pairing(c_i, c_j), c);
+        tuple_labels.push_back(new_color);
+    }
+
     for (Node i = 0; i < num_nodes; ++i) {
         for (Node j = 0; j < num_nodes; ++j) {
-            if ((i == j) or g.has_edge(i, j)) {
+            if (g.has_edge(i, j)) {
                 two_tuple_graph.add_node();
-
+                TwoTuple two_tuple = make_tuple(i, j);
                 // Map each pair to node in two set graph and also inverse.
-                node_to_two_tuple.insert({{num_two_tuples, make_tuple(i, j)}});
-                two_tuple_to_node.insert({{make_tuple(i, j), num_two_tuples}});
+                node_to_two_tuple.insert({{num_two_tuples, two_tuple}});
+                two_tuple_to_node.insert({{two_tuple, num_two_tuples}});
                 num_two_tuples++;
 
                 Label c_i = 1;
@@ -869,19 +889,12 @@ Graph GenerateTwo::generate_local_graph_connected(const Graph &g, const bool use
                 }
 
                 Label c;
-                if (g.has_edge(i, j)) {
-                    if (use_edge_labels) {
-                        auto s = edge_labels.find(make_tuple(i, j));
-                        c = AuxiliaryMethods::pairing(3, s->second);
-                    } else {
-                        c = 3;
-                    }
-                } else if (i == j) {
-                    c = 1;
+                if (use_edge_labels) {
+                    auto s = edge_labels.find(two_tuple);
+                    c = AuxiliaryMethods::pairing(3, s->second);
                 } else {
-                    c = 2;
+                    c = 3;
                 }
-
                 Label new_color = AuxiliaryMethods::pairing(AuxiliaryMethods::pairing(c_i, c_j), c);
                 tuple_labels.push_back(new_color);
             }
@@ -897,25 +910,24 @@ Graph GenerateTwo::generate_local_graph_connected(const Graph &g, const bool use
         // Exchange first node.
         Nodes v_neighbors = g.get_neighbours(v);
         for (Node v_n : v_neighbors) {
-            if (g.has_edge(v_n, w) or (v_n == w)) {
-                unordered_map<TwoTuple, Node>::const_iterator t = two_tuple_to_node.find(make_tuple(v_n, w));
-                two_tuple_graph.add_edge(i, t->second);
-
-                edge_type.insert({{make_tuple(i, t->second), 1}});
-                vertex_id.insert({{make_tuple(i, t->second), v_n}});
-                local.insert({{make_tuple(i, t->second), 1}});
+            const auto it = two_tuple_to_node.find(make_tuple(v_n, w));
+            if (it != two_tuple_to_node.end()) {
+                two_tuple_graph.add_edge(i, it->second);
+                edge_type.insert({{make_tuple(i, it->second), 1}});
+                vertex_id.insert({{make_tuple(i, it->second), v_n}});
+                local.insert({{make_tuple(i, it->second), 1}});
             }
         }
 
         // Exchange second node.
         Nodes w_neighbors = g.get_neighbours(w);
         for (Node w_n : w_neighbors) {
-            if (g.has_edge(v, w_n) or (v == w_n)) {
-                unordered_map<TwoTuple, Node>::const_iterator t = two_tuple_to_node.find(make_tuple(v, w_n));
-                two_tuple_graph.add_edge(i, t->second);
-                edge_type.insert({{make_tuple(i, t->second), 2}});
-                vertex_id.insert({{make_tuple(i, t->second), w_n}});
-                local.insert({{make_tuple(i, t->second), 1}});
+            const auto it = two_tuple_to_node.find(make_tuple(v, w_n));
+            if (it != two_tuple_to_node.end()) {
+                two_tuple_graph.add_edge(i, it->second);
+                edge_type.insert({{make_tuple(i, it->second), 2}});
+                vertex_id.insert({{make_tuple(i, it->second), w_n}});
+                local.insert({{make_tuple(i, it->second), 1}});
             }
         }
     }
@@ -956,14 +968,14 @@ GramMatrix GenerateTwo::generate_local_sparse_am(const Graph &g, const bool use_
         edge_labels = g.get_edge_labels();
     }
 
-    Node num_two_tuples = 0;
+    size_t num_two_tuples = 0;
     for (Node i = 0; i < num_nodes; ++i) {
         for (Node j = 0; j < num_nodes; ++j) {
             two_tuple_graph.add_node();
-
+            TwoTuple two_tuple = make_tuple(i, j);
             // Map each pair to node in two set graph and also inverse.
-            node_to_two_tuple.insert({{num_two_tuples, make_tuple(i, j)}});
-            two_tuple_to_node.insert({{make_tuple(i, j), num_two_tuples}});
+            node_to_two_tuple.insert({{num_two_tuples, two_tuple}});
+            two_tuple_to_node.insert({{two_tuple, num_two_tuples}});
             num_two_tuples++;
 
             Label c_i = 1;
@@ -976,7 +988,7 @@ GramMatrix GenerateTwo::generate_local_sparse_am(const Graph &g, const bool use_
             Label c;
             if (g.has_edge(i, j)) {
                 if (use_edge_labels) {
-                    auto s = edge_labels.find(make_tuple(i, j));
+                    auto s = edge_labels.find(two_tuple);
                     c = AuxiliaryMethods::pairing(3, s->second);
                 } else {
                     c = 3;
@@ -1004,25 +1016,25 @@ GramMatrix GenerateTwo::generate_local_sparse_am(const Graph &g, const bool use_
         // Exchange first node.
         Nodes v_neighbors = g.get_neighbours(v);
         for (Node v_n : v_neighbors) {
-            unordered_map<TwoTuple, Node>::const_iterator t = two_tuple_to_node.find(make_tuple(v_n, w));
-            two_tuple_graph.add_edge(i, t->second);
-            edge_type.insert({{make_tuple(i, t->second), 1}});
-            vertex_id.insert({{make_tuple(i, t->second), v_n}});
-            local.insert({{make_tuple(i, t->second), 1}});
+            const auto it = two_tuple_to_node.find(make_tuple(v_n, w));
+            two_tuple_graph.add_edge(i, it->second);
+            edge_type.insert({{make_tuple(i, it->second), 1}});
+            vertex_id.insert({{make_tuple(i, it->second), v_n}});
+            local.insert({{make_tuple(i, it->second), 1}});
 
-            nonzero_compenents.push_back(S(i, t->second, 1.0));
+            nonzero_compenents.push_back(S(i, it->second, 1.0));
         }
 
         // Exchange second node.
         Nodes w_neighbors = g.get_neighbours(w);
         for (Node w_n : w_neighbors) {
-            unordered_map<TwoTuple, Node>::const_iterator t = two_tuple_to_node.find(make_tuple(v, w_n));
-            two_tuple_graph.add_edge(i, t->second);
-            edge_type.insert({{make_tuple(i, t->second), 2}});
-            vertex_id.insert({{make_tuple(i, t->second), w_n}});
-            local.insert({{make_tuple(i, t->second), 1}});
+            const auto it = two_tuple_to_node.find(make_tuple(v, w_n));
+            two_tuple_graph.add_edge(i, it->second);
+            edge_type.insert({{make_tuple(i, it->second), 2}});
+            vertex_id.insert({{make_tuple(i, it->second), w_n}});
+            local.insert({{make_tuple(i, it->second), 1}});
 
-            nonzero_compenents.push_back(S(i, t->second, 1.0));
+            nonzero_compenents.push_back(S(i, it->second, 1.0));
         }
     }
 
@@ -1066,14 +1078,14 @@ vector<int> GenerateTwo::get_edge_labels(const Graph &g, const bool use_labels, 
         edge_labels = g.get_edge_labels();
     }
 
-    Node num_two_tuples = 0;
+    size_t num_two_tuples = 0;
     for (Node i = 0; i < num_nodes; ++i) {
         for (Node j = 0; j < num_nodes; ++j) {
             two_tuple_graph.add_node();
-
+            TwoTuple two_tuple = make_tuple(i, j);
             // Map each pair to node in two set graph and also inverse.
-            node_to_two_tuple.insert({{num_two_tuples, make_tuple(i, j)}});
-            two_tuple_to_node.insert({{make_tuple(i, j), num_two_tuples}});
+            node_to_two_tuple.insert({{num_two_tuples, two_tuple}});
+            two_tuple_to_node.insert({{two_tuple, num_two_tuples}});
             num_two_tuples++;
 
             Label c_i = 1;
@@ -1086,7 +1098,7 @@ vector<int> GenerateTwo::get_edge_labels(const Graph &g, const bool use_labels, 
             Label c;
             if (g.has_edge(i, j)) {
                 if (use_edge_labels) {
-                    auto s = edge_labels.find(make_tuple(i, j));
+                    auto s = edge_labels.find(two_tuple);
                     c = AuxiliaryMethods::pairing(3, s->second);
                 } else {
                     c = 3;
@@ -1116,29 +1128,29 @@ vector<int> GenerateTwo::get_edge_labels(const Graph &g, const bool use_labels, 
         // Exchange first node.
         Nodes v_neighbors = g.get_neighbours(v);
         for (Node v_n : v_neighbors) {
-            unordered_map<TwoTuple, Node>::const_iterator t = two_tuple_to_node.find(make_tuple(v_n, w));
-            two_tuple_graph.add_edge(i, t->second);
-            edge_type.insert({{make_tuple(i, t->second), 1}});
-            vertex_id.insert({{make_tuple(i, t->second), v_n}});
-            local.insert({{make_tuple(i, t->second), 1}});
+            const auto it = two_tuple_to_node.find(make_tuple(v_n, w));
+            two_tuple_graph.add_edge(i, it->second);
+            edge_type.insert({{make_tuple(i, it->second), 1}});
+            vertex_id.insert({{make_tuple(i, it->second), v_n}});
+            local.insert({{make_tuple(i, it->second), 1}});
 
             edge_types.push_back(1);
 
-            nonzero_compenents.push_back(S(i, t->second, 1.0));
+            nonzero_compenents.push_back(S(i, it->second, 1.0));
         }
 
         // Exchange second node.
         Nodes w_neighbors = g.get_neighbours(w);
         for (Node w_n : w_neighbors) {
-            unordered_map<TwoTuple, Node>::const_iterator t = two_tuple_to_node.find(make_tuple(v, w_n));
-            two_tuple_graph.add_edge(i, t->second);
-            edge_type.insert({{make_tuple(i, t->second), 2}});
-            vertex_id.insert({{make_tuple(i, t->second), w_n}});
-            local.insert({{make_tuple(i, t->second), 1}});
+            const auto it = two_tuple_to_node.find(make_tuple(v, w_n));
+            two_tuple_graph.add_edge(i, it->second);
+            edge_type.insert({{make_tuple(i, it->second), 2}});
+            vertex_id.insert({{make_tuple(i, it->second), w_n}});
+            local.insert({{make_tuple(i, it->second), 1}});
 
             edge_types.push_back(2);
 
-            nonzero_compenents.push_back(S(i, t->second, 1.0));
+            nonzero_compenents.push_back(S(i, it->second, 1.0));
         }
     }
 
@@ -1168,6 +1180,7 @@ Labels GenerateTwo::get_node_labels(const Graph &g, const bool use_labels, const
 
     for (Node i = 0; i < num_nodes; ++i) {
         for (Node j = 0; j < num_nodes; ++j) {
+            TwoTuple two_tuple = make_tuple(i, j);
             Label c_i = 1;
             Label c_j = 2;
             if (use_labels) {
@@ -1178,7 +1191,7 @@ Labels GenerateTwo::get_node_labels(const Graph &g, const bool use_labels, const
             Label c;
             if (g.has_edge(i, j)) {
                 if (use_edge_labels) {
-                    auto s = edge_labels.find(make_tuple(i, j));
+                    auto s = edge_labels.find(two_tuple);
                     c = AuxiliaryMethods::pairing(3, s->second);
                 } else {
                     c = 3;
@@ -1228,10 +1241,10 @@ Graph GenerateTwo::generate_global_graph(const Graph &g, const bool use_labels, 
     for (Node i = 0; i < num_nodes; ++i) {
         for (Node j = 0; j < num_nodes; ++j) {
             two_tuple_graph.add_node();
-
+            TwoTuple two_tuple = make_tuple(i, j);
             // Map each pair to node in two set graph and also inverse.
-            node_to_two_tuple.insert({{num_two_tuples, make_tuple(i, j)}});
-            two_tuple_to_node.insert({{make_tuple(i, j), num_two_tuples}});
+            node_to_two_tuple.insert({{num_two_tuples, two_tuple}});
+            two_tuple_to_node.insert({{two_tuple, num_two_tuples}});
             num_two_tuples++;
 
             Label c_i = 1;
@@ -1244,7 +1257,7 @@ Graph GenerateTwo::generate_global_graph(const Graph &g, const bool use_labels, 
             Label c;
             if (g.has_edge(i, j)) {
                 if (use_edge_labels) {
-                    auto s = edge_labels.find(make_tuple(i, j));
+                    auto s = edge_labels.find(two_tuple);
                     c = AuxiliaryMethods::pairing(3, s->second);
                 } else {
                     c = 3;
@@ -1269,23 +1282,21 @@ Graph GenerateTwo::generate_global_graph(const Graph &g, const bool use_labels, 
         // Exchange first node.
         // Iterate over nodes.
         for (Node v_i = 0; v_i < num_nodes; ++v_i) {
-            unordered_map<TwoTuple, Node>::const_iterator t;
-            t = two_tuple_to_node.find(make_tuple(v_i, w));
-            two_tuple_graph.add_edge(i, t->second);
-            edge_type.insert({{make_tuple(i, t->second), 1}});
-            vertex_id.insert({{make_tuple(i, t->second), v_i}});
-            local.insert({{make_tuple(i, t->second), 1}});
+            const auto it = two_tuple_to_node.find(make_tuple(v_i, w));
+            two_tuple_graph.add_edge(i, it->second);
+            edge_type.insert({{make_tuple(i, it->second), 1}});
+            vertex_id.insert({{make_tuple(i, it->second), v_i}});
+            local.insert({{make_tuple(i, it->second), 1}});
         }
 
         // Exchange second node.
         // Iterate over nodes.
         for (Node v_i = 0; v_i < num_nodes; ++v_i) {
-            unordered_map<TwoTuple, Node>::const_iterator t;
-            t = two_tuple_to_node.find(make_tuple(v, v_i));
-            two_tuple_graph.add_edge(i, t->second);
-            edge_type.insert({{make_tuple(i, t->second), 2}});
-            vertex_id.insert({{make_tuple(i, t->second), v_i}});
-            local.insert({{make_tuple(i, t->second), 1}});
+            const auto it = two_tuple_to_node.find(make_tuple(v, v_i));
+            two_tuple_graph.add_edge(i, it->second);
+            edge_type.insert({{make_tuple(i, it->second), 2}});
+            vertex_id.insert({{make_tuple(i, it->second), v_i}});
+            local.insert({{make_tuple(i, it->second), 1}});
         }
     }
 
@@ -1328,10 +1339,10 @@ Graph GenerateTwo::generate_global_graph_malkin(const Graph &g, const bool use_l
     for (Node i = 0; i < num_nodes; ++i) {
         for (Node j = 0; j < num_nodes; ++j) {
             two_tuple_graph.add_node();
-
+            TwoTuple two_tuple = make_tuple(i, j);
             // Map each pair to node in two set graph and also inverse.
-            node_to_two_tuple.insert({{num_two_tuples, make_tuple(i, j)}});
-            two_tuple_to_node.insert({{make_tuple(i, j), num_two_tuples}});
+            node_to_two_tuple.insert({{num_two_tuples, two_tuple}});
+            two_tuple_to_node.insert({{two_tuple, num_two_tuples}});
             num_two_tuples++;
 
             Label c_i = 1;
@@ -1344,7 +1355,7 @@ Graph GenerateTwo::generate_global_graph_malkin(const Graph &g, const bool use_l
             Label c;
             if (g.has_edge(i, j)) {
                 if (use_edge_labels) {
-                    auto s = edge_labels.find(make_tuple(i, j));
+                    auto s = edge_labels.find(two_tuple);
                     c = AuxiliaryMethods::pairing(3, s->second);
                 } else {
                     c = 3;
@@ -1369,40 +1380,38 @@ Graph GenerateTwo::generate_global_graph_malkin(const Graph &g, const bool use_l
         // Exchange first node.
         // Iterate over nodes.
         for (Node v_i = 0; v_i < num_nodes; ++v_i) {
-            unordered_map<TwoTuple, Node>::const_iterator t;
-            t = two_tuple_to_node.find(make_tuple(v_i, w));
+            const auto it = two_tuple_to_node.find(make_tuple(v_i, w));
 
             // Local vs. global edge.
             if (g.has_edge(v, v_i)) {
-                edge_type.insert({{make_tuple(i, t->second), 1}});
-                vertex_id.insert({{make_tuple(i, t->second), v_i}});
-                local.insert({{make_tuple(i, t->second), 1}});
+                edge_type.insert({{make_tuple(i, it->second), 1}});
+                vertex_id.insert({{make_tuple(i, it->second), v_i}});
+                local.insert({{make_tuple(i, it->second), 1}});
             } else {
-                edge_type.insert({{make_tuple(i, t->second), 1}});
-                vertex_id.insert({{make_tuple(i, t->second), v_i}});
-                local.insert({{make_tuple(i, t->second), 2}});
+                edge_type.insert({{make_tuple(i, it->second), 1}});
+                vertex_id.insert({{make_tuple(i, it->second), v_i}});
+                local.insert({{make_tuple(i, it->second), 2}});
             }
 
-            two_tuple_graph.add_edge(i, t->second);
+            two_tuple_graph.add_edge(i, it->second);
         }
         // Exchange second node.
         // Iterate over nodes.
         for (Node v_i = 0; v_i < num_nodes; ++v_i) {
-            unordered_map<TwoTuple, Node>::const_iterator t;
-            t = two_tuple_to_node.find(make_tuple(v, v_i));
+            const auto it = two_tuple_to_node.find(make_tuple(v, v_i));
 
             // Local vs. global edge.
             if (g.has_edge(w, v_i)) {
-                edge_type.insert({{make_tuple(i, t->second), 2}});
-                vertex_id.insert({{make_tuple(i, t->second), v_i}});
-                local.insert({{make_tuple(i, t->second), 1}});
+                edge_type.insert({{make_tuple(i, it->second), 2}});
+                vertex_id.insert({{make_tuple(i, it->second), v_i}});
+                local.insert({{make_tuple(i, it->second), 1}});
             } else {
-                edge_type.insert({{make_tuple(i, t->second), 2}});
-                vertex_id.insert({{make_tuple(i, t->second), v_i}});
-                local.insert({{make_tuple(i, t->second), 2}});
+                edge_type.insert({{make_tuple(i, it->second), 2}});
+                vertex_id.insert({{make_tuple(i, it->second), v_i}});
+                local.insert({{make_tuple(i, it->second), 2}});
             }
 
-            two_tuple_graph.add_edge(i, t->second);
+            two_tuple_graph.add_edge(i, it->second);
         }
     }
 
