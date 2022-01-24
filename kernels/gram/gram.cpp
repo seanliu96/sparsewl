@@ -160,7 +160,7 @@ int main(int argc, char **argv) {
 
                 high_resolution_clock::time_point t1 = high_resolution_clock::now();
                 vector<GramMatrix> gms =
-                    graph_kernel.compute_gram_matrices(n_iters, use_labels, use_edge_labels, true, false);
+                    graph_kernel.compute_gram_matrices(n_iters, use_labels, use_edge_labels, true, true);
                 high_resolution_clock::time_point t2 = high_resolution_clock::now();
                 auto duration = duration_cast<seconds>(t2 - t1).count();
                 cout << kernel + "-" + to_string(n_iters) << "\t" << ds << "\t" << duration << " seconds" << endl;

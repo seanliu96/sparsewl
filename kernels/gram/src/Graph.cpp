@@ -3,7 +3,7 @@
 namespace GraphLibrary {
 Graph::Graph(const bool directed)
     : m_is_directed(directed),
-      m_has_dummy(false),
+      m_dummy_node(-1),
       m_num_nodes(0),
       m_num_edges(0),
       m_node_labels(),
@@ -15,7 +15,7 @@ Graph::Graph(const bool directed)
 
 Graph::Graph(const bool directed, const uint num_nodes, const EdgeList &edgeList, const Labels node_labels)
     : m_is_directed(directed),
-      m_has_dummy(false),
+      m_dummy_node(-1),
       m_adjacency_lists(),
       m_num_nodes(num_nodes),
       m_num_edges(edgeList.size()),
@@ -56,14 +56,13 @@ void Graph::add_edge(const Node &v, const Node &w) {
 }
 
 size_t Graph::add_dummy() {
-    if (!m_has_dummy) {
+    if (m_dummy_node == -1) {
         bool has_node_labels = (m_num_nodes == m_node_labels.size());
         bool has_node_attributes = (m_num_nodes == m_node_attributes.size());
         bool has_edge_labels = (m_num_edges == m_edge_labels.size());
         bool has_edge_attributes = (m_num_edges == m_edge_attributes.size());
 
-        m_has_dummy = true;
-        Node dummy_node = add_node();
+        size_t dummy_node = add_node();
         if (has_node_labels && m_node_labels.size() != 0) {
             Label dummy_node_label = 0;
             if (*min_element(m_node_labels.begin(), m_node_labels.end()) == dummy_node_label) {
@@ -157,9 +156,10 @@ size_t Graph::add_dummy() {
             }
         }
 
+        m_dummy_node = dummy_node;
         return dummy_node;
     } else {
-        return -1;
+        return m_dummy_node;
     }
 }
 
@@ -170,6 +170,8 @@ Nodes Graph::get_neighbours(const Node &v) const { return m_adjacency_lists[v]; 
 size_t Graph::get_num_nodes() const { return m_num_nodes; }
 
 size_t Graph::get_num_edges() const { return m_num_edges; }
+
+Node Graph::get_dummy() const { return m_dummy_node; }
 
 uint Graph::has_edge(const Node &v, const Node &w) const {
     // This works for directed as well as undirected graphs.

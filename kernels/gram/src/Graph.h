@@ -95,6 +95,9 @@ class Graph {
     // Get number of edges in graph.
     size_t get_num_edges() const;
 
+    // Returns dummy node in graph, otherwise -1
+    Node get_dummy() const;
+
     // Returns "1" if edge {u,w} exists, otherwise "0".
     uint has_edge(const Node &v, const Node &w) const;
 
@@ -146,7 +149,7 @@ class Graph {
     // true if graph is directed.
     bool m_is_directed;
     // true if graph has dummy
-    bool m_has_dummy;
+    Node m_dummy_node;
 };
 
 typedef vector<Graph> GraphDatabase;

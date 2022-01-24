@@ -177,9 +177,7 @@ pair<ColorCounter, vector<uint>> GenerateTwo::compute_colors(const Graph &g, con
 
                         check_1.insert({{e, true}});
                     }
-                }
-
-                if (it->second == 2) {
+                } else if (it->second == 2) {
                     Label l = a;
 
                     l = AuxiliaryMethods::pairing(l, 2);
@@ -233,17 +231,21 @@ pair<ColorCounter, vector<uint>> GenerateTwo::compute_colors(const Graph &g, con
     while (h <= num_iterations && color_nums[h - 1] < MAXNUMCOLOR) {
         // Iterate over all nodes.
         for (Node v = 0; v < num_nodes; ++v) {
+            Labels colors_dummy;
             Labels colors_local;
             Labels colors_global;
             Nodes neighbors(tuple_graph.get_neighbours(v));
+            colors_dummy.reserve(neighbors.size() + 1);
             colors_local.reserve(neighbors.size() + 1);
             colors_global.reserve(neighbors.size() + 1);
 
             // New color of node v.
             Label new_color;
 
+            vector<vector<Label>> set_m_dummy;
             vector<vector<Label>> set_m_local;
             vector<vector<Label>> set_m_global;
+            unordered_map<uint, uint> id_to_position_dummy;
             unordered_map<uint, uint> id_to_position_local;
             unordered_map<uint, uint> id_to_position_global;
 
@@ -255,10 +257,21 @@ pair<ColorCounter, vector<uint>> GenerateTwo::compute_colors(const Graph &g, con
 
                 const auto it = edge_labels.find(make_tuple(v, n));
                 l = AuxiliaryMethods::pairing(coloring[n], it->second);
-
                 const auto type = local.find(make_tuple(v, n));
-
-                if (type->second == 1) {  // Local neighbor.
+                
+                if (type->second == 0) {  // Dummy neighbor.
+                    const auto s = vertex_id.find(make_tuple(v, n));
+                    const auto pos(id_to_position_dummy.find(s->second));
+                    if (pos != id_to_position_dummy.end()) {
+                        set_m_dummy[pos->second].push_back(l);
+                    } else {
+                        id_to_position_dummy.insert({{s->second, dg}});
+                        set_m_dummy.push_back(vector<Label>());
+                        set_m_dummy[dg].push_back(l);
+                        dg++;
+                    }
+                }
+                else if (type->second == 1) {  // Local neighbor.
                     const auto s = vertex_id.find(make_tuple(v, n));
                     const auto pos(id_to_position_local.find(s->second));
                     if (pos != id_to_position_local.end()) {
@@ -282,6 +295,19 @@ pair<ColorCounter, vector<uint>> GenerateTwo::compute_colors(const Graph &g, con
                     }
                 }
             }
+
+            for (auto &m : set_m_dummy) {
+                if (m.size() != 0) {
+                    sort(m.begin(), m.end());
+                    new_color = m.back();
+                    m.pop_back();
+                    for (const Label &c : m) {
+                        new_color = AuxiliaryMethods::pairing(new_color, c);
+                    }
+                    colors_dummy.push_back(new_color);
+                }
+            }
+            sort(colors_dummy.begin(), colors_dummy.end());
 
             for (auto &m : set_m_local) {
                 if (m.size() != 0) {
@@ -308,6 +334,10 @@ pair<ColorCounter, vector<uint>> GenerateTwo::compute_colors(const Graph &g, con
                 }
             }
             sort(colors_global.begin(), colors_global.end());
+
+            for (auto &c : colors_dummy) {
+                colors_local.push_back(c);
+            }
 
             for (auto &c : colors_global) {
                 colors_local.push_back(c);
@@ -540,21 +570,30 @@ pair<ColorCounter, vector<uint>> GenerateTwo::compute_colors_simple(const Graph 
     while (h <= num_iterations && color_nums[h - 1] < MAXNUMCOLOR) {
         // Iterate over all nodes.
         for (Node v = 0; v < num_nodes; ++v) {
+            Labels colors_dummy;
             Labels colors_local;
             Labels colors_global;
             Nodes neighbors(tuple_graph.get_neighbours(v));
+            colors_dummy.reserve(neighbors.size() + 1);
             colors_local.reserve(neighbors.size() + 1);
             colors_global.reserve(neighbors.size() + 1);
 
             // New color of node v.
             Label new_color;
 
+            vector<vector<Label>> set_m_dummy;
             vector<vector<Label>> set_m_local;
             vector<vector<Label>> set_m_global;
 
+            set_m_dummy.push_back(vector<Label>());
+            set_m_dummy.push_back(vector<Label>());
+            set_m_dummy.push_back(vector<Label>());
+            
+            set_m_local.push_back(vector<Label>());
             set_m_local.push_back(vector<Label>());
             set_m_local.push_back(vector<Label>());
 
+            set_m_global.push_back(vector<Label>());
             set_m_global.push_back(vector<Label>());
             set_m_global.push_back(vector<Label>());
 
@@ -563,33 +602,43 @@ pair<ColorCounter, vector<uint>> GenerateTwo::compute_colors_simple(const Graph 
                 const auto type = local.find(make_tuple(v, n));
                 const auto label = edge_labels.find(make_tuple(v, n))->second;
 
-                // Local neighbor.
-                if (type->second == 1) {
+                // Dummy neighbor
+                if (type->second == 0) {
+                    set_m_dummy[label].push_back(coloring[n]);
+                } else if (type->second == 1) { // Local neighbor.
                     if (label == 1) {
                         if ((algorithm == "localp" or algorithm == "localpc") and num_iterations == h) {
-                            set_m_local[0].push_back(
-                                AuxiliaryMethods::pairing(coloring[n], color_map_1.find(coloring[n])->second));
-                        } else {
-                            set_m_local[0].push_back(coloring[n]);
-                        }
-                    }
-                    if (label == 2) {
-                        if ((algorithm == "localp" or algorithm == "localpc") and num_iterations == h) {
                             set_m_local[1].push_back(
-                                AuxiliaryMethods::pairing(coloring[n], color_map_2.find(coloring[n])->second));
+                                AuxiliaryMethods::pairing(coloring[n], color_map_1.find(coloring[n])->second));
                         } else {
                             set_m_local[1].push_back(coloring[n]);
                         }
                     }
-                } else {  // Global neighbor.
-                    if (label == 1) {
-                        set_m_global[0].push_back(coloring[n]);
-                    }
                     if (label == 2) {
-                        set_m_global[1].push_back(coloring[n]);
+                        if ((algorithm == "localp" or algorithm == "localpc") and num_iterations == h) {
+                            set_m_local[2].push_back(
+                                AuxiliaryMethods::pairing(coloring[n], color_map_2.find(coloring[n])->second));
+                        } else {
+                            set_m_local[2].push_back(coloring[n]);
+                        }
                     }
+                } else {  // Global neighbor.
+                    set_m_global[label].push_back(coloring[n]);
                 }
             }
+
+            for (auto &m : set_m_dummy) {
+                if (m.size() != 0) {
+                    sort(m.begin(), m.end());
+                    new_color = m.back();
+                    m.pop_back();
+                    for (const Label &c : m) {
+                        new_color = AuxiliaryMethods::pairing(new_color, c);
+                    }
+                    colors_dummy.push_back(new_color);
+                }
+            }
+            sort(colors_dummy.begin(), colors_dummy.end());
 
             for (auto &m : set_m_local) {
                 if (m.size() != 0) {
@@ -616,6 +665,10 @@ pair<ColorCounter, vector<uint>> GenerateTwo::compute_colors_simple(const Graph 
                 }
             }
             sort(colors_global.begin(), colors_global.end());
+
+            for (auto &c : colors_dummy) {
+                colors_local.push_back(c);
+            }
 
             for (auto &c : colors_global) {
                 colors_local.push_back(c);
@@ -651,69 +704,69 @@ pair<ColorCounter, vector<uint>> GenerateTwo::compute_colors_simple(const Graph 
         std::swap(coloring, coloring_temp);
         h++;
 
-        unordered_map<Label, bool> check_1;
-        unordered_map<Label, bool> check_2;
+        // unordered_map<Label, bool> check_1;
+        // unordered_map<Label, bool> check_2;
 
-        if ((algorithm == "localp" or algorithm == "localpc") and num_iterations == h) {
-            for (Node v = 0; v < num_nodes; ++v) {
-                Nodes neighbors(tuple_graph.get_neighbours(v));
+        // if ((algorithm == "localp" or algorithm == "localpc") and num_iterations == h) {
+        //     for (Node v = 0; v < num_nodes; ++v) {
+        //         Nodes neighbors(tuple_graph.get_neighbours(v));
 
-                for (const Node &n : neighbors) {
-                    const auto it = edge_labels.find(make_tuple(v, n));
+        //         for (const Node &n : neighbors) {
+        //             const auto it = edge_labels.find(make_tuple(v, n));
 
-                    TwoTuple p = node_to_two_tuple.find(n)->second;
-                    Node a = std::get<0>(p);
-                    Node b = std::get<1>(p);
+        //             TwoTuple p = node_to_two_tuple.find(n)->second;
+        //             Node a = std::get<0>(p);
+        //             Node b = std::get<1>(p);
 
-                    if (it->second == 1) {
-                        Label l = b;
-                        l = AuxiliaryMethods::pairing(l, 1);
-                        l = AuxiliaryMethods::pairing(l, coloring[n]);
+        //             if (it->second == 1) {
+        //                 Label l = b;
+        //                 l = AuxiliaryMethods::pairing(l, 1);
+        //                 l = AuxiliaryMethods::pairing(l, coloring[n]);
 
-                        Label e = a;
-                        e = AuxiliaryMethods::pairing(e, b);
-                        e = AuxiliaryMethods::pairing(e, 1);
-                        const auto is = check_1.find(e);
+        //                 Label e = a;
+        //                 e = AuxiliaryMethods::pairing(e, b);
+        //                 e = AuxiliaryMethods::pairing(e, 1);
+        //                 const auto is = check_1.find(e);
 
-                        if (is == check_1.end()) {
-                            const auto it = color_map_1.find(l);
+        //                 if (is == check_1.end()) {
+        //                     const auto it = color_map_1.find(l);
 
-                            if (it == color_map_1.end()) {
-                                color_map_1.insert({{l, 1}});
-                            } else {
-                                it->second++;
-                            }
+        //                     if (it == color_map_1.end()) {
+        //                         color_map_1.insert({{l, 1}});
+        //                     } else {
+        //                         it->second++;
+        //                     }
 
-                            check_1.insert({{e, true}});
-                        }
-                    }
+        //                     check_1.insert({{e, true}});
+        //                 }
+        //             }
 
-                    if (it->second == 2) {
-                        Label l = a;
+        //             if (it->second == 2) {
+        //                 Label l = a;
 
-                        l = AuxiliaryMethods::pairing(l, 2);
-                        l = AuxiliaryMethods::pairing(l, coloring[n]);
+        //                 l = AuxiliaryMethods::pairing(l, 2);
+        //                 l = AuxiliaryMethods::pairing(l, coloring[n]);
 
-                        Label e = a;
-                        e = AuxiliaryMethods::pairing(e, b);
-                        e = AuxiliaryMethods::pairing(e, 2);
-                        const auto is = check_2.find(e);
+        //                 Label e = a;
+        //                 e = AuxiliaryMethods::pairing(e, b);
+        //                 e = AuxiliaryMethods::pairing(e, 2);
+        //                 const auto is = check_2.find(e);
 
-                        if (is == check_2.end()) {
-                            const auto it = color_map_2.find(l);
+        //                 if (is == check_2.end()) {
+        //                     const auto it = color_map_2.find(l);
 
-                            if (it == color_map_2.end()) {
-                                color_map_2.insert({{l, 1}});
-                            } else {
-                                it->second++;
-                            }
+        //                     if (it == color_map_2.end()) {
+        //                         color_map_2.insert({{l, 1}});
+        //                     } else {
+        //                         it->second++;
+        //                     }
 
-                            check_2.insert({{e, true}});
-                        }
-                    }
-                }
-            }
-        }
+        //                     check_2.insert({{e, true}});
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
     }
 
     while (h <= num_iterations) {
@@ -725,6 +778,7 @@ pair<ColorCounter, vector<uint>> GenerateTwo::compute_colors_simple(const Graph 
 }
 
 Graph GenerateTwo::generate_local_graph(const Graph &g, const bool use_labels, const bool use_edge_labels) {
+    Node dummy_node = g.get_dummy();
     size_t num_nodes = g.get_num_nodes();
     // New graph to be generated.
     Graph two_tuple_graph(false);
@@ -769,17 +823,20 @@ Graph GenerateTwo::generate_local_graph(const Graph &g, const bool use_labels, c
             }
 
             Label c;
-            if (g.has_edge(i, j)) {
-                if (use_edge_labels) {
-                    auto s = edge_labels.find(two_tuple);
-                    c = AuxiliaryMethods::pairing(3, s->second);
+            if (i == j) {
+                c = 1;
+            } else if (not g.has_edge(i, j)) {
+                c = 2;
+            } else {
+                if (i == dummy_node or j == dummy_node) {
+                    c = 0;
                 } else {
                     c = 3;
                 }
-            } else if (i == j) {
-                c = 1;
-            } else {
-                c = 2;
+                if (use_edge_labels) {
+                    auto s = edge_labels.find(two_tuple);
+                    c = AuxiliaryMethods::pairing(c, s->second);
+                }
             }
 
             Label new_color = AuxiliaryMethods::pairing(AuxiliaryMethods::pairing(c_i, c_j), c);
@@ -797,20 +854,36 @@ Graph GenerateTwo::generate_local_graph(const Graph &g, const bool use_labels, c
         Nodes v_neighbors = g.get_neighbours(v);
         for (Node v_n : v_neighbors) {
             const auto it = two_tuple_to_node.find(make_tuple(v_n, w));
+            Label c, l;
+            if (v_n == dummy_node) {
+                c = 1;
+                l = 0;
+            } else {
+                c = 1;
+                l = 1;
+            }
             two_tuple_graph.add_edge(i, it->second);
-            edge_type.insert({{make_tuple(i, it->second), 1}});
+            edge_type.insert({{make_tuple(i, it->second), c}});
             vertex_id.insert({{make_tuple(i, it->second), v_n}});
-            local.insert({{make_tuple(i, it->second), 1}});
+            local.insert({{make_tuple(i, it->second), l}});
         }
 
         // Exchange second node.
         Nodes w_neighbors = g.get_neighbours(w);
         for (Node w_n : w_neighbors) {
             const auto it = two_tuple_to_node.find(make_tuple(v, w_n));
+            Label c, l;
+            if (w_n == dummy_node) {
+                c = 2;
+                l = 0;
+            } else {
+                c = 2;
+                l = 1;
+            }
             two_tuple_graph.add_edge(i, it->second);
-            edge_type.insert({{make_tuple(i, it->second), 2}});
+            edge_type.insert({{make_tuple(i, it->second), c}});
             vertex_id.insert({{make_tuple(i, it->second), w_n}});
-            local.insert({{make_tuple(i, it->second), 1}});
+            local.insert({{make_tuple(i, it->second), l}});
         }
     }
 
@@ -824,6 +897,7 @@ Graph GenerateTwo::generate_local_graph(const Graph &g, const bool use_labels, c
 }
 
 Graph GenerateTwo::generate_local_graph_connected(const Graph &g, const bool use_labels, const bool use_edge_labels) {
+    Node dummy_node = g.get_dummy();
     size_t num_nodes = g.get_num_nodes();
     // New graph to be generated.
     Graph two_tuple_graph(false);
@@ -889,11 +963,14 @@ Graph GenerateTwo::generate_local_graph_connected(const Graph &g, const bool use
                 }
 
                 Label c;
-                if (use_edge_labels) {
-                    auto s = edge_labels.find(two_tuple);
-                    c = AuxiliaryMethods::pairing(3, s->second);
+                if (i == dummy_node or j == dummy_node) {
+                    c = 0;
                 } else {
                     c = 3;
+                }
+                if (use_edge_labels) {
+                    auto s = edge_labels.find(two_tuple);
+                    c = AuxiliaryMethods::pairing(c, s->second);
                 }
                 Label new_color = AuxiliaryMethods::pairing(AuxiliaryMethods::pairing(c_i, c_j), c);
                 tuple_labels.push_back(new_color);
@@ -912,10 +989,18 @@ Graph GenerateTwo::generate_local_graph_connected(const Graph &g, const bool use
         for (Node v_n : v_neighbors) {
             const auto it = two_tuple_to_node.find(make_tuple(v_n, w));
             if (it != two_tuple_to_node.end()) {
+                Label c, l;
+                if (v_n == dummy_node) {
+                    c = 1;
+                    l = 0;
+                } else {
+                    c = 1;
+                    l = 1;
+                }
                 two_tuple_graph.add_edge(i, it->second);
-                edge_type.insert({{make_tuple(i, it->second), 1}});
+                edge_type.insert({{make_tuple(i, it->second), c}});
                 vertex_id.insert({{make_tuple(i, it->second), v_n}});
-                local.insert({{make_tuple(i, it->second), 1}});
+                local.insert({{make_tuple(i, it->second), l}});
             }
         }
 
@@ -924,10 +1009,18 @@ Graph GenerateTwo::generate_local_graph_connected(const Graph &g, const bool use
         for (Node w_n : w_neighbors) {
             const auto it = two_tuple_to_node.find(make_tuple(v, w_n));
             if (it != two_tuple_to_node.end()) {
+                Label c, l;
+                if (w_n == dummy_node) {
+                    c = 2;
+                    l = 0;
+                } else {
+                    c = 2;
+                    l = 1;
+                }
                 two_tuple_graph.add_edge(i, it->second);
-                edge_type.insert({{make_tuple(i, it->second), 2}});
+                edge_type.insert({{make_tuple(i, it->second), c}});
                 vertex_id.insert({{make_tuple(i, it->second), w_n}});
-                local.insert({{make_tuple(i, it->second), 1}});
+                local.insert({{make_tuple(i, it->second), l}});
             }
         }
     }
@@ -942,6 +1035,7 @@ Graph GenerateTwo::generate_local_graph_connected(const Graph &g, const bool use
 }
 
 GramMatrix GenerateTwo::generate_local_sparse_am(const Graph &g, const bool use_labels, const bool use_edge_labels) {
+    Node dummy_node = g.get_dummy();
     size_t num_nodes = g.get_num_nodes();
     // New graph to be generated.
     Graph two_tuple_graph(false);
@@ -986,17 +1080,20 @@ GramMatrix GenerateTwo::generate_local_sparse_am(const Graph &g, const bool use_
             }
 
             Label c;
-            if (g.has_edge(i, j)) {
-                if (use_edge_labels) {
-                    auto s = edge_labels.find(two_tuple);
-                    c = AuxiliaryMethods::pairing(3, s->second);
+            if (i == j) {
+                c = 1;
+            } else if (not g.has_edge(i, j)) {
+                c = 2;
+            } else {
+                if (i == dummy_node or j == dummy_node) {
+                    c = 0;
                 } else {
                     c = 3;
                 }
-            } else if (i == j) {
-                c = 1;
-            } else {
-                c = 2;
+                if (use_edge_labels) {
+                    auto s = edge_labels.find(two_tuple);
+                    c = AuxiliaryMethods::pairing(c, s->second);
+                }
             }
 
             Label new_color = AuxiliaryMethods::pairing(AuxiliaryMethods::pairing(c_i, c_j), c);
@@ -1017,10 +1114,18 @@ GramMatrix GenerateTwo::generate_local_sparse_am(const Graph &g, const bool use_
         Nodes v_neighbors = g.get_neighbours(v);
         for (Node v_n : v_neighbors) {
             const auto it = two_tuple_to_node.find(make_tuple(v_n, w));
+            Label c, l;
+            if (v_n == dummy_node) {
+                c = 1;
+                l = 0;
+            } else {
+                c = 1;
+                l = 1;
+            }
             two_tuple_graph.add_edge(i, it->second);
-            edge_type.insert({{make_tuple(i, it->second), 1}});
+            edge_type.insert({{make_tuple(i, it->second), c}});
             vertex_id.insert({{make_tuple(i, it->second), v_n}});
-            local.insert({{make_tuple(i, it->second), 1}});
+            local.insert({{make_tuple(i, it->second), l}});
 
             nonzero_compenents.push_back(S(i, it->second, 1.0));
         }
@@ -1029,10 +1134,18 @@ GramMatrix GenerateTwo::generate_local_sparse_am(const Graph &g, const bool use_
         Nodes w_neighbors = g.get_neighbours(w);
         for (Node w_n : w_neighbors) {
             const auto it = two_tuple_to_node.find(make_tuple(v, w_n));
+            Label c, l;
+            if (w_n == dummy_node) {
+                c = 2;
+                l = 0;
+            } else {
+                c = 2;
+                l = 1;
+            }
             two_tuple_graph.add_edge(i, it->second);
-            edge_type.insert({{make_tuple(i, it->second), 2}});
+            edge_type.insert({{make_tuple(i, it->second), c}});
             vertex_id.insert({{make_tuple(i, it->second), w_n}});
-            local.insert({{make_tuple(i, it->second), 1}});
+            local.insert({{make_tuple(i, it->second), l}});
 
             nonzero_compenents.push_back(S(i, it->second, 1.0));
         }
@@ -1052,6 +1165,7 @@ GramMatrix GenerateTwo::generate_local_sparse_am(const Graph &g, const bool use_
 }
 
 vector<int> GenerateTwo::get_edge_labels(const Graph &g, const bool use_labels, const bool use_edge_labels) {
+    Node dummy_node = g.get_dummy();
     size_t num_nodes = g.get_num_nodes();
     // New graph to be generated.
     Graph two_tuple_graph(false);
@@ -1096,17 +1210,20 @@ vector<int> GenerateTwo::get_edge_labels(const Graph &g, const bool use_labels, 
             }
 
             Label c;
-            if (g.has_edge(i, j)) {
-                if (use_edge_labels) {
-                    auto s = edge_labels.find(two_tuple);
-                    c = AuxiliaryMethods::pairing(3, s->second);
+            if (i == j) {
+                c = 1;
+            } else if (not g.has_edge(i, j)) {
+                c = 2;
+            } else {
+                if (i == dummy_node or j == dummy_node) {
+                    c = 0;
                 } else {
                     c = 3;
                 }
-            } else if (i == j) {
-                c = 1;
-            } else {
-                c = 2;
+                if (use_edge_labels) {
+                    auto s = edge_labels.find(two_tuple);
+                    c = AuxiliaryMethods::pairing(c, s->second);
+                }
             }
 
             Label new_color = AuxiliaryMethods::pairing(AuxiliaryMethods::pairing(c_i, c_j), c);
@@ -1129,12 +1246,20 @@ vector<int> GenerateTwo::get_edge_labels(const Graph &g, const bool use_labels, 
         Nodes v_neighbors = g.get_neighbours(v);
         for (Node v_n : v_neighbors) {
             const auto it = two_tuple_to_node.find(make_tuple(v_n, w));
+            Label c, l;
+            if (v_n == dummy_node) {
+                c = 1;
+                l = 0;
+            } else {
+                c = 1;
+                l = 1;
+            }
             two_tuple_graph.add_edge(i, it->second);
-            edge_type.insert({{make_tuple(i, it->second), 1}});
+            edge_type.insert({{make_tuple(i, it->second), c}});
             vertex_id.insert({{make_tuple(i, it->second), v_n}});
-            local.insert({{make_tuple(i, it->second), 1}});
+            local.insert({{make_tuple(i, it->second), l}});
 
-            edge_types.push_back(1);
+            edge_types.push_back(c);
 
             nonzero_compenents.push_back(S(i, it->second, 1.0));
         }
@@ -1143,12 +1268,20 @@ vector<int> GenerateTwo::get_edge_labels(const Graph &g, const bool use_labels, 
         Nodes w_neighbors = g.get_neighbours(w);
         for (Node w_n : w_neighbors) {
             const auto it = two_tuple_to_node.find(make_tuple(v, w_n));
+            Label c, l;
+            if (w_n == dummy_node) {
+                c = 2;
+                l = 0;
+            } else {
+                c = 2;
+                l = 1;
+            }
             two_tuple_graph.add_edge(i, it->second);
-            edge_type.insert({{make_tuple(i, it->second), 2}});
+            edge_type.insert({{make_tuple(i, it->second), c}});
             vertex_id.insert({{make_tuple(i, it->second), w_n}});
-            local.insert({{make_tuple(i, it->second), 1}});
+            local.insert({{make_tuple(i, it->second), l}});
 
-            edge_types.push_back(2);
+            edge_types.push_back(c);
 
             nonzero_compenents.push_back(S(i, it->second, 1.0));
         }
@@ -1164,6 +1297,7 @@ vector<int> GenerateTwo::get_edge_labels(const Graph &g, const bool use_labels, 
 }
 
 Labels GenerateTwo::get_node_labels(const Graph &g, const bool use_labels, const bool use_edge_labels) {
+    Node dummy_node = g.get_dummy();
     size_t num_nodes = g.get_num_nodes();
 
     // Create a node for each two set.
@@ -1189,17 +1323,20 @@ Labels GenerateTwo::get_node_labels(const Graph &g, const bool use_labels, const
             }
 
             Label c;
-            if (g.has_edge(i, j)) {
-                if (use_edge_labels) {
-                    auto s = edge_labels.find(two_tuple);
-                    c = AuxiliaryMethods::pairing(3, s->second);
+            if (i == j) {
+                c = 1;
+            } else if (not g.has_edge(i, j)) {
+                c = 2;
+            } else {
+                if (i == dummy_node or j == dummy_node) {
+                    c = 0;
                 } else {
                     c = 3;
                 }
-            } else if (i == j) {
-                c = 1;
-            } else {
-                c = 2;
+                if (use_edge_labels) {
+                    auto s = edge_labels.find(two_tuple);
+                    c = AuxiliaryMethods::pairing(c, s->second);
+                }
             }
 
             Label new_color = AuxiliaryMethods::pairing(AuxiliaryMethods::pairing(c_i, c_j), c);
@@ -1211,6 +1348,7 @@ Labels GenerateTwo::get_node_labels(const Graph &g, const bool use_labels, const
 }
 
 Graph GenerateTwo::generate_global_graph(const Graph &g, const bool use_labels, const bool use_edge_labels) {
+    Node dummy_node = g.get_dummy();
     size_t num_nodes = g.get_num_nodes();
     // New graph to be generated.
     Graph two_tuple_graph(false);
@@ -1255,17 +1393,20 @@ Graph GenerateTwo::generate_global_graph(const Graph &g, const bool use_labels, 
             }
 
             Label c;
-            if (g.has_edge(i, j)) {
-                if (use_edge_labels) {
-                    auto s = edge_labels.find(two_tuple);
-                    c = AuxiliaryMethods::pairing(3, s->second);
+            if (i == j) {
+                c = 1;
+            } else if (not g.has_edge(i, j)) {
+                c = 2;
+            } else {
+                if (i == dummy_node or j == dummy_node) {
+                    c = 0;
                 } else {
                     c = 3;
                 }
-            } else if (i == j) {
-                c = 1;
-            } else {
-                c = 2;
+                if (use_edge_labels) {
+                    auto s = edge_labels.find(two_tuple);
+                    c = AuxiliaryMethods::pairing(c, s->second);
+                }
             }
 
             Label new_color = AuxiliaryMethods::pairing(AuxiliaryMethods::pairing(c_i, c_j), c);
@@ -1283,20 +1424,36 @@ Graph GenerateTwo::generate_global_graph(const Graph &g, const bool use_labels, 
         // Iterate over nodes.
         for (Node v_i = 0; v_i < num_nodes; ++v_i) {
             const auto it = two_tuple_to_node.find(make_tuple(v_i, w));
+            Label c, l;
+            if (v_i == dummy_node) {
+                c = 1;
+                l = 0;
+            } else {
+                c = 1;
+                l = 1;
+            }
             two_tuple_graph.add_edge(i, it->second);
-            edge_type.insert({{make_tuple(i, it->second), 1}});
+            edge_type.insert({{make_tuple(i, it->second), c}});
             vertex_id.insert({{make_tuple(i, it->second), v_i}});
-            local.insert({{make_tuple(i, it->second), 1}});
+            local.insert({{make_tuple(i, it->second), l}});
         }
 
         // Exchange second node.
         // Iterate over nodes.
         for (Node v_i = 0; v_i < num_nodes; ++v_i) {
             const auto it = two_tuple_to_node.find(make_tuple(v, v_i));
+            Label c, l;
+            if (v_i == dummy_node) {
+                c = 2;
+                l = 0;
+            } else {
+                c = 2;
+                l = 1;
+            }
             two_tuple_graph.add_edge(i, it->second);
-            edge_type.insert({{make_tuple(i, it->second), 2}});
+            edge_type.insert({{make_tuple(i, it->second), c}});
             vertex_id.insert({{make_tuple(i, it->second), v_i}});
-            local.insert({{make_tuple(i, it->second), 1}});
+            local.insert({{make_tuple(i, it->second), l}});
         }
     }
 
@@ -1309,6 +1466,7 @@ Graph GenerateTwo::generate_global_graph(const Graph &g, const bool use_labels, 
 }
 
 Graph GenerateTwo::generate_global_graph_malkin(const Graph &g, const bool use_labels, const bool use_edge_labels) {
+    Node dummy_node = g.get_dummy();
     size_t num_nodes = g.get_num_nodes();
     // New graph to be generated.
     Graph two_tuple_graph(false);
@@ -1353,17 +1511,20 @@ Graph GenerateTwo::generate_global_graph_malkin(const Graph &g, const bool use_l
             }
 
             Label c;
-            if (g.has_edge(i, j)) {
-                if (use_edge_labels) {
-                    auto s = edge_labels.find(two_tuple);
-                    c = AuxiliaryMethods::pairing(3, s->second);
+            if (i == j) {
+                c = 1;
+            } else if (not g.has_edge(i, j)) {
+                c = 2;
+            } else {
+                if (i == dummy_node or j == dummy_node) {
+                    c = 0;
                 } else {
                     c = 3;
                 }
-            } else if (i == j) {
-                c = 1;
-            } else {
-                c = 2;
+                if (use_edge_labels) {
+                    auto s = edge_labels.find(two_tuple);
+                    c = AuxiliaryMethods::pairing(c, s->second);
+                }
             }
 
             Label new_color = AuxiliaryMethods::pairing(AuxiliaryMethods::pairing(c_i, c_j), c);
@@ -1381,17 +1542,22 @@ Graph GenerateTwo::generate_global_graph_malkin(const Graph &g, const bool use_l
         // Iterate over nodes.
         for (Node v_i = 0; v_i < num_nodes; ++v_i) {
             const auto it = two_tuple_to_node.find(make_tuple(v_i, w));
-
-            // Local vs. global edge.
-            if (g.has_edge(v, v_i)) {
-                edge_type.insert({{make_tuple(i, it->second), 1}});
-                vertex_id.insert({{make_tuple(i, it->second), v_i}});
-                local.insert({{make_tuple(i, it->second), 1}});
+            Label c, l;
+            if (v_i == dummy_node) {
+                c = 1;
+                l = 0;
             } else {
-                edge_type.insert({{make_tuple(i, it->second), 1}});
-                vertex_id.insert({{make_tuple(i, it->second), v_i}});
-                local.insert({{make_tuple(i, it->second), 2}});
+                c = 1;
+                // Local vs. global edge.
+                if (g.has_edge(v, v_i)) {
+                    l = 1;
+                } else {
+                    l = 2;
+                }
             }
+            edge_type.insert({{make_tuple(i, it->second), c}});
+            vertex_id.insert({{make_tuple(i, it->second), v_i}});
+            local.insert({{make_tuple(i, it->second), l}});
 
             two_tuple_graph.add_edge(i, it->second);
         }
@@ -1399,17 +1565,22 @@ Graph GenerateTwo::generate_global_graph_malkin(const Graph &g, const bool use_l
         // Iterate over nodes.
         for (Node v_i = 0; v_i < num_nodes; ++v_i) {
             const auto it = two_tuple_to_node.find(make_tuple(v, v_i));
-
-            // Local vs. global edge.
-            if (g.has_edge(w, v_i)) {
-                edge_type.insert({{make_tuple(i, it->second), 2}});
-                vertex_id.insert({{make_tuple(i, it->second), v_i}});
-                local.insert({{make_tuple(i, it->second), 1}});
+            Label c, l;
+            if (v_i == dummy_node) {
+                c = 2;
+                l = 0;
             } else {
-                edge_type.insert({{make_tuple(i, it->second), 2}});
-                vertex_id.insert({{make_tuple(i, it->second), v_i}});
-                local.insert({{make_tuple(i, it->second), 2}});
+                c = 2;
+                // Local vs. global edge.
+                if (g.has_edge(w, v_i)) {
+                    l = 1;
+                } else {
+                    l = 2;
+                }
             }
+            edge_type.insert({{make_tuple(i, it->second), c}});
+            vertex_id.insert({{make_tuple(i, it->second), v_i}});
+            local.insert({{make_tuple(i, it->second), l}});
 
             two_tuple_graph.add_edge(i, it->second);
         }
