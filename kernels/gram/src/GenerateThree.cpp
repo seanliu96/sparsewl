@@ -259,17 +259,21 @@ pair<ColorCounter, vector<uint>> GenerateThree::compute_colors(const Graph &g, c
     while (h <= num_iterations && color_nums[h-1] < MAXNUMCOLOR) {
         // Iterate over all nodes.
         for (Node v = 0; v < num_nodes; ++v) {
+            Labels colors_dummy;
             Labels colors_local;
             Labels colors_global;
             Nodes neighbors(tuple_graph.get_neighbours(v));
+            colors_dummy.reserve(neighbors.size() + 1);
             colors_local.reserve(neighbors.size() + 1);
             colors_global.reserve(neighbors.size() + 1);
 
             // New color of node v.
             Label new_color;
 
+            vector<vector<Label>> set_m_dummy;
             vector<vector<Label>> set_m_local;
             vector<vector<Label>> set_m_global;
+            unordered_map<uint, uint> id_to_position_dummy;
             unordered_map<uint, uint> id_to_position_local;
             unordered_map<uint, uint> id_to_position_global;
 
@@ -279,10 +283,20 @@ pair<ColorCounter, vector<uint>> GenerateThree::compute_colors(const Graph &g, c
             for (const Node &n : neighbors) {
                 const auto it = edge_labels.find(make_tuple(v, n));
                 Label l = AuxiliaryMethods::pairing(coloring[n], it->second);
-
                 const auto type = local.find(make_tuple(v, n));
 
-                if (type->second == 1) {
+                if (type->second == 0) { // Dummy neighbor.
+                    const auto s = vertex_id.find(make_tuple(v, n));
+                    const auto pos(id_to_position_dummy.find(s->second));
+                    if (pos != id_to_position_dummy.end()) {
+                        set_m_dummy[pos->second].push_back(l);
+                    } else {
+                        id_to_position_dummy.insert({{s->second, dl}});
+                        set_m_dummy.push_back(vector<Label>());
+                        set_m_dummy[dl].push_back(l);
+                        dl++;
+                    }
+                } else if (type->second == 1) { // Local neighbor.
                     const auto s = vertex_id.find(make_tuple(v, n));
                     const auto pos(id_to_position_local.find(s->second));
                     if (pos != id_to_position_local.end()) {
@@ -293,7 +307,7 @@ pair<ColorCounter, vector<uint>> GenerateThree::compute_colors(const Graph &g, c
                         set_m_local[dl].push_back(l);
                         dl++;
                     }
-                } else {
+                } else { // Global neighbor.
                     const auto s = vertex_id.find(make_tuple(v, n));
                     const auto pos(id_to_position_global.find(s->second));
                     if (pos != id_to_position_global.end()) {
@@ -306,6 +320,19 @@ pair<ColorCounter, vector<uint>> GenerateThree::compute_colors(const Graph &g, c
                     }
                 }
             }
+
+            for (auto &m : set_m_dummy) {
+                if (m.size() != 0) {
+                    sort(m.begin(), m.end());
+                    new_color = m.back();
+                    m.pop_back();
+                    for (const Label &c : m) {
+                        new_color = AuxiliaryMethods::pairing(new_color, c);
+                    }
+                    colors_dummy.push_back(new_color);
+                }
+            }
+            sort(colors_dummy.begin(), colors_dummy.end());
 
             for (auto &m : set_m_local) {
                 if (m.size() != 0) {
@@ -332,6 +359,10 @@ pair<ColorCounter, vector<uint>> GenerateThree::compute_colors(const Graph &g, c
                 }
             }
             sort(colors_global.begin(), colors_global.end());
+
+            for (auto &c : colors_dummy) {
+                colors_local.push_back(c);
+            }
 
             for (auto &c : colors_global) {
                 colors_local.push_back(c);
@@ -629,22 +660,32 @@ pair<ColorCounter, vector<uint>> GenerateThree::compute_colors_simple(const Grap
     while (h <= num_iterations && color_nums[h-1] < MAXNUMCOLOR) {
         // Iterate over all nodes.
         for (Node v = 0; v < num_nodes; ++v) {
+            Labels colors_dummy;
             Labels colors_local;
             Labels colors_global;
             Nodes neighbors(tuple_graph.get_neighbours(v));
+            colors_dummy.reserve(neighbors.size() + 1);
             colors_local.reserve(neighbors.size() + 1);
             colors_global.reserve(neighbors.size() + 1);
 
             // New color of node v.
             Label new_color;
 
+            vector<vector<Label>> set_m_dummy;
             vector<vector<Label>> set_m_local;
             vector<vector<Label>> set_m_global;
 
+            set_m_dummy.push_back(vector<Label>());
+            set_m_dummy.push_back(vector<Label>());
+            set_m_dummy.push_back(vector<Label>());
+            set_m_dummy.push_back(vector<Label>());
+
+            set_m_local.push_back(vector<Label>());
             set_m_local.push_back(vector<Label>());
             set_m_local.push_back(vector<Label>());
             set_m_local.push_back(vector<Label>());
 
+            set_m_global.push_back(vector<Label>());
             set_m_global.push_back(vector<Label>());
             set_m_global.push_back(vector<Label>());
             set_m_global.push_back(vector<Label>());
@@ -654,8 +695,10 @@ pair<ColorCounter, vector<uint>> GenerateThree::compute_colors_simple(const Grap
                 const auto type = local.find(make_tuple(v, n));
                 const auto label = edge_labels.find(make_tuple(v, n))->second;
 
-                // Local neighbor.
-                if (type->second == 1) {
+                if (type->second == 0) { // Dummy neighbor.
+                    set_m_dummy[label].push_back(coloring[n]);
+                }
+                else if (type->second == 1) { // Local neighbor.
                     if (label == 1) {
                         if (algorithm == "localp" and num_iterations == h) {
                             set_m_local[0].push_back(
@@ -681,17 +724,22 @@ pair<ColorCounter, vector<uint>> GenerateThree::compute_colors_simple(const Grap
                         }
                     }
                 } else {  // Global neighbor.
-                    if (label == 1) {
-                        set_m_global[0].push_back(coloring[n]);
-                    }
-                    if (label == 2) {
-                        set_m_global[1].push_back(coloring[n]);
-                    }
-                    if (label == 3) {
-                        set_m_global[2].push_back(coloring[n]);
-                    }
+                    set_m_global[label].push_back(coloring[n]);
                 }
             }
+
+            for (auto &m : set_m_dummy) {
+                if (m.size() != 0) {
+                    sort(m.begin(), m.end());
+                    new_color = m.back();
+                    m.pop_back();
+                    for (const Label &c : m) {
+                        new_color = AuxiliaryMethods::pairing(new_color, c);
+                    }
+                    colors_dummy.push_back(new_color);
+                }
+            }
+            sort(colors_dummy.begin(), colors_dummy.end());
 
             for (auto &m : set_m_local) {
                 if (m.size() != 0) {
@@ -718,6 +766,10 @@ pair<ColorCounter, vector<uint>> GenerateThree::compute_colors_simple(const Grap
                 }
             }
             sort(colors_global.begin(), colors_global.end());
+
+            for (auto &c : colors_dummy) {
+                colors_local.push_back(c);
+            }
 
             for (auto &c : colors_global) {
                 colors_local.push_back(c);
@@ -753,99 +805,99 @@ pair<ColorCounter, vector<uint>> GenerateThree::compute_colors_simple(const Grap
         std::swap(coloring, coloring_temp);
         h++;
 
-        unordered_map<Label, bool> check_1;
-        unordered_map<Label, bool> check_2;
-        unordered_map<Label, bool> check_3;
+        // unordered_map<Label, bool> check_1;
+        // unordered_map<Label, bool> check_2;
+        // unordered_map<Label, bool> check_3;
 
-        if (algorithm == "localp" and num_iterations == h) {
-            for (Node v = 0; v < num_nodes; ++v) {
-                Nodes neighbors(tuple_graph.get_neighbours(v));
+        // if (algorithm == "localp" and num_iterations == h) {
+        //     for (Node v = 0; v < num_nodes; ++v) {
+        //         Nodes neighbors(tuple_graph.get_neighbours(v));
 
-                for (const Node &n : neighbors) {
-                    const auto it = edge_labels.find(make_tuple(v, n));
+        //         for (const Node &n : neighbors) {
+        //             const auto it = edge_labels.find(make_tuple(v, n));
 
-                    ThreeTuple p = node_to_three_tuple.find(n)->second;
-                    Node a = std::get<0>(p);
-                    Node b = std::get<1>(p);
-                    Node c = std::get<2>(p);
+        //             ThreeTuple p = node_to_three_tuple.find(n)->second;
+        //             Node a = std::get<0>(p);
+        //             Node b = std::get<1>(p);
+        //             Node c = std::get<2>(p);
 
-                    if (it->second == 1) {
-                        Label l = b;
-                        l = AuxiliaryMethods::pairing(l, c);
-                        l = AuxiliaryMethods::pairing(l, 1);
-                        l = AuxiliaryMethods::pairing(l, coloring[n]);
+        //             if (it->second == 1) {
+        //                 Label l = b;
+        //                 l = AuxiliaryMethods::pairing(l, c);
+        //                 l = AuxiliaryMethods::pairing(l, 1);
+        //                 l = AuxiliaryMethods::pairing(l, coloring[n]);
 
-                        Label e = a;
-                        e = AuxiliaryMethods::pairing(e, b);
-                        e = AuxiliaryMethods::pairing(e, c);
-                        e = AuxiliaryMethods::pairing(e, 1);
-                        const auto is = check_1.find(e);
+        //                 Label e = a;
+        //                 e = AuxiliaryMethods::pairing(e, b);
+        //                 e = AuxiliaryMethods::pairing(e, c);
+        //                 e = AuxiliaryMethods::pairing(e, 1);
+        //                 const auto is = check_1.find(e);
 
-                        if (is == check_1.end()) {
-                            const auto it = color_map_1.find(l);
+        //                 if (is == check_1.end()) {
+        //                     const auto it = color_map_1.find(l);
 
-                            if (it == color_map_1.end()) {
-                                color_map_1.insert({{l, 1}});
-                            } else {
-                                it->second++;
-                            }
+        //                     if (it == color_map_1.end()) {
+        //                         color_map_1.insert({{l, 1}});
+        //                     } else {
+        //                         it->second++;
+        //                     }
 
-                            check_1.insert({{e, true}});
-                        }
-                    }
+        //                     check_1.insert({{e, true}});
+        //                 }
+        //             }
 
-                    if (it->second == 2) {
-                        Label l = a;
-                        l = AuxiliaryMethods::pairing(l, c);
-                        l = AuxiliaryMethods::pairing(l, 2);
-                        l = AuxiliaryMethods::pairing(l, coloring[n]);
+        //             if (it->second == 2) {
+        //                 Label l = a;
+        //                 l = AuxiliaryMethods::pairing(l, c);
+        //                 l = AuxiliaryMethods::pairing(l, 2);
+        //                 l = AuxiliaryMethods::pairing(l, coloring[n]);
 
-                        Label e = a;
-                        e = AuxiliaryMethods::pairing(e, b);
-                        e = AuxiliaryMethods::pairing(e, c);
-                        e = AuxiliaryMethods::pairing(e, 2);
-                        const auto is = check_2.find(e);
+        //                 Label e = a;
+        //                 e = AuxiliaryMethods::pairing(e, b);
+        //                 e = AuxiliaryMethods::pairing(e, c);
+        //                 e = AuxiliaryMethods::pairing(e, 2);
+        //                 const auto is = check_2.find(e);
 
-                        if (is == check_2.end()) {
-                            const auto it = color_map_2.find(l);
+        //                 if (is == check_2.end()) {
+        //                     const auto it = color_map_2.find(l);
 
-                            if (it == color_map_2.end()) {
-                                color_map_2.insert({{l, 1}});
-                            } else {
-                                it->second++;
-                            }
+        //                     if (it == color_map_2.end()) {
+        //                         color_map_2.insert({{l, 1}});
+        //                     } else {
+        //                         it->second++;
+        //                     }
 
-                            check_2.insert({{e, true}});
-                        }
-                    }
+        //                     check_2.insert({{e, true}});
+        //                 }
+        //             }
 
-                    if (it->second == 3) {
-                        Label l = a;
-                        l = AuxiliaryMethods::pairing(l, b);
-                        l = AuxiliaryMethods::pairing(l, 3);
-                        l = AuxiliaryMethods::pairing(l, coloring[n]);
+        //             if (it->second == 3) {
+        //                 Label l = a;
+        //                 l = AuxiliaryMethods::pairing(l, b);
+        //                 l = AuxiliaryMethods::pairing(l, 3);
+        //                 l = AuxiliaryMethods::pairing(l, coloring[n]);
 
-                        Label e = a;
-                        e = AuxiliaryMethods::pairing(e, b);
-                        e = AuxiliaryMethods::pairing(e, c);
-                        e = AuxiliaryMethods::pairing(e, 3);
-                        const auto is = check_3.find(e);
+        //                 Label e = a;
+        //                 e = AuxiliaryMethods::pairing(e, b);
+        //                 e = AuxiliaryMethods::pairing(e, c);
+        //                 e = AuxiliaryMethods::pairing(e, 3);
+        //                 const auto is = check_3.find(e);
 
-                        if (is == check_3.end()) {
-                            const auto it = color_map_3.find(l);
+        //                 if (is == check_3.end()) {
+        //                     const auto it = color_map_3.find(l);
 
-                            if (it == color_map_3.end()) {
-                                color_map_3.insert({{l, 1}});
-                            } else {
-                                it->second++;
-                            }
+        //                     if (it == color_map_3.end()) {
+        //                         color_map_3.insert({{l, 1}});
+        //                     } else {
+        //                         it->second++;
+        //                     }
 
-                            check_3.insert({{e, true}});
-                        }
-                    }
-                }
-            }
-        }
+        //                     check_3.insert({{e, true}});
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
     }
 
     while (h <= num_iterations) {
@@ -857,6 +909,7 @@ pair<ColorCounter, vector<uint>> GenerateThree::compute_colors_simple(const Grap
 }
 
 Graph GenerateThree::generate_local_graph(const Graph &g, const bool use_labels, const bool use_edge_labels) {
+    Node dummy_node = g.get_dummy();
     size_t num_nodes = g.get_num_nodes();
     // New graph to be generated.
     Graph three_tuple_graph(false);
@@ -941,30 +994,54 @@ Graph GenerateThree::generate_local_graph(const Graph &g, const bool use_labels,
         Nodes v_neighbors = g.get_neighbours(v);
         for (const auto &v_n : v_neighbors) {
             const auto it = three_tuple_to_node.find(make_tuple(v_n, w, u));
+            Label c, l;
+            if (v_n == dummy_node) {
+                c = 1;
+                l = 0;
+            } else {
+                c = 1;
+                l = 1;
+            }
             three_tuple_graph.add_edge(i, it->second);
-            edge_type.insert({{make_tuple(i, it->second), 1}});
+            edge_type.insert({{make_tuple(i, it->second), c}});
             vertex_id.insert({{make_tuple(i, it->second), v_n}});
-            local.insert({{make_tuple(i, it->second), 1}});
+            local.insert({{make_tuple(i, it->second), l}});
         }
 
         // Exchange second node.
         Nodes w_neighbors = g.get_neighbours(w);
         for (const auto &w_n : w_neighbors) {
             const auto it = three_tuple_to_node.find(make_tuple(v, w_n, u));
+            Label c, l;
+            if (w_n == dummy_node) {
+                c = 2;
+                l = 0;
+            } else {
+                c = 2;
+                l = 1;
+            }
             three_tuple_graph.add_edge(i, it->second);
-            edge_type.insert({{make_tuple(i, it->second), 2}});
+            edge_type.insert({{make_tuple(i, it->second), c}});
             vertex_id.insert({{make_tuple(i, it->second), w_n}});
-            local.insert({{make_tuple(i, it->second), 1}});
+            local.insert({{make_tuple(i, it->second), l}});
         }
 
         // Exchange third node.
         Nodes u_neighbors = g.get_neighbours(u);
         for (const auto &u_n : u_neighbors) {
             const auto it = three_tuple_to_node.find(make_tuple(v, w, u_n));
+            Label c, l;
+            if (u_n == dummy_node) {
+                c = 3;
+                l = 0;
+            } else {
+                c = 3;
+                l = 1;
+            }
             three_tuple_graph.add_edge(i, it->second);
-            edge_type.insert({{make_tuple(i, it->second), 3}});
+            edge_type.insert({{make_tuple(i, it->second), c}});
             vertex_id.insert({{make_tuple(i, it->second), u_n}});
-            local.insert({{make_tuple(i, it->second), 1}});
+            local.insert({{make_tuple(i, it->second), l}});
         }
     }
 
@@ -978,6 +1055,7 @@ Graph GenerateThree::generate_local_graph(const Graph &g, const bool use_labels,
 }
 
 Graph GenerateThree::generate_local_graph_connected(const Graph &g, const bool use_labels, const bool use_edge_labels) {
+    Node dummy_node = g.get_dummy();
     size_t num_nodes = g.get_num_nodes();
     // New graph to be generated.
     Graph three_tuple_graph(false);
@@ -1131,10 +1209,18 @@ Graph GenerateThree::generate_local_graph_connected(const Graph &g, const bool u
         for (const auto &v_n : v_neighbors) {
             const auto it = three_tuple_to_node.find(make_tuple(v_n, w, u));
             if (it != three_tuple_to_node.end()) {
+                Label c, l;
+                if (v_n == dummy_node) {
+                    c = 1;
+                    l = 0;
+                } else {
+                    c = 1;
+                    l = 1;
+                }
                 three_tuple_graph.add_edge(i, it->second);
-                edge_type.insert({{make_tuple(i, it->second), 1}});
+                edge_type.insert({{make_tuple(i, it->second), c}});
                 vertex_id.insert({{make_tuple(i, it->second), v_n}});
-                local.insert({{make_tuple(i, it->second), 1}});
+                local.insert({{make_tuple(i, it->second), l}});
             }
         }
 
@@ -1143,10 +1229,18 @@ Graph GenerateThree::generate_local_graph_connected(const Graph &g, const bool u
         for (const auto &w_n : w_neighbors) {
             const auto it = three_tuple_to_node.find(make_tuple(v, w_n, u));
             if (it != three_tuple_to_node.end()) {
+                Label c, l;
+                if (w_n == dummy_node) {
+                    c = 2;
+                    l = 0;
+                } else {
+                    c = 2;
+                    l = 1;
+                }
                 three_tuple_graph.add_edge(i, it->second);
-                edge_type.insert({{make_tuple(i, it->second), 2}});
+                edge_type.insert({{make_tuple(i, it->second), c}});
                 vertex_id.insert({{make_tuple(i, it->second), w_n}});
-                local.insert({{make_tuple(i, it->second), 1}});
+                local.insert({{make_tuple(i, it->second), l}});
             }
         }
 
@@ -1155,10 +1249,18 @@ Graph GenerateThree::generate_local_graph_connected(const Graph &g, const bool u
         for (const auto &u_n : u_neighbors) {
             const auto it = three_tuple_to_node.find(make_tuple(v, w, u_n));
             if (it != three_tuple_to_node.end()) {
+                Label c, l;
+                if (u_n == dummy_node) {
+                    c = 3;
+                    l = 0;
+                } else {
+                    c = 3;
+                    l = 1;
+                }
                 three_tuple_graph.add_edge(i, it->second);
-                edge_type.insert({{make_tuple(i, it->second), 3}});
+                edge_type.insert({{make_tuple(i, it->second), c}});
                 vertex_id.insert({{make_tuple(i, it->second), u_n}});
-                local.insert({{make_tuple(i, it->second), 1}});
+                local.insert({{make_tuple(i, it->second), l}});
             }
         }
     }
@@ -1173,6 +1275,7 @@ Graph GenerateThree::generate_local_graph_connected(const Graph &g, const bool u
 }
 
 Graph GenerateThree::generate_global_graph(const Graph &g, const bool use_labels, const bool use_edge_labels) {
+    Node dummy_node = g.get_dummy();
     size_t num_nodes = g.get_num_nodes();
     // New graph to be generated.
     Graph three_tuple_graph(false);
@@ -1256,30 +1359,54 @@ Graph GenerateThree::generate_global_graph(const Graph &g, const bool use_labels
         // Iterate over nodes.
         for (Node v_i = 0; v_i < num_nodes; ++v_i) {
             const auto it = three_tuple_to_node.find(make_tuple(v_i, w, u));
+            Label c, l;
+            if (v_i == dummy_node) {
+                c = 1;
+                l = 0;
+            } else {
+                c = 1;
+                l = 1;
+            }
             three_tuple_graph.add_edge(i, it->second);
-            edge_type.insert({{make_tuple(i, it->second), 1}});
+            edge_type.insert({{make_tuple(i, it->second), c}});
             vertex_id.insert({{make_tuple(i, it->second), v_i}});
-            local.insert({{make_tuple(i, it->second), 1}});
+            local.insert({{make_tuple(i, it->second), l}});
         }
 
         // Exchange second node.
         // Iterate over nodes.
         for (Node v_i = 0; v_i < num_nodes; ++v_i) {
             const auto it = three_tuple_to_node.find(make_tuple(v, v_i, u));
+            Label c, l;
+            if (v_i == dummy_node) {
+                c = 2;
+                l = 0;
+            } else {
+                c = 2;
+                l = 1;
+            }
             three_tuple_graph.add_edge(i, it->second);
-            edge_type.insert({{make_tuple(i, it->second), 2}});
+            edge_type.insert({{make_tuple(i, it->second), c}});
             vertex_id.insert({{make_tuple(i, it->second), v_i}});
-            local.insert({{make_tuple(i, it->second), 1}});
+            local.insert({{make_tuple(i, it->second), l}});
         }
 
         // Exchange second node.
         // Iterate over nodes.
         for (Node v_i = 0; v_i < num_nodes; ++v_i) {
             const auto it = three_tuple_to_node.find(make_tuple(v, w, v_i));
+            Label c, l;
+            if (v_i == dummy_node) {
+                c = 3;
+                l = 0;
+            } else {
+                c = 3;
+                l = 1;
+            }
             three_tuple_graph.add_edge(i, it->second);
-            edge_type.insert({{make_tuple(i, it->second), 3}});
+            edge_type.insert({{make_tuple(i, it->second), c}});
             vertex_id.insert({{make_tuple(i, it->second), v_i}});
-            local.insert({{make_tuple(i, it->second), 1}});
+            local.insert({{make_tuple(i, it->second), l}});
         }
     }
 
@@ -1292,6 +1419,7 @@ Graph GenerateThree::generate_global_graph(const Graph &g, const bool use_labels
 }
 
 Graph GenerateThree::generate_global_graph_malkin(const Graph &g, const bool use_labels, const bool use_edge_labels) {
+    Node dummy_node = g.get_dummy();
     size_t num_nodes = g.get_num_nodes();
     // New graph to be generated.
     Graph three_tuple_graph(false);
@@ -1376,17 +1504,22 @@ Graph GenerateThree::generate_global_graph_malkin(const Graph &g, const bool use
         for (Node v_i = 0; v_i < num_nodes; ++v_i) {
             const auto it = three_tuple_to_node.find(make_tuple(v_i, w, u));
             three_tuple_graph.add_edge(i, it->second);
-
-            // Local vs. global edge.
-            if (g.has_edge(v, v_i)) {
-                edge_type.insert({{make_tuple(i, it->second), 1}});
-                vertex_id.insert({{make_tuple(i, it->second), v_i}});
-                local.insert({{make_tuple(i, it->second), 1}});
+            Label c, l;
+            if (v_i == dummy_node) {
+                c = 1;
+                l = 0;
             } else {
-                edge_type.insert({{make_tuple(i, it->second), 1}});
-                vertex_id.insert({{make_tuple(i, it->second), v_i}});
-                local.insert({{make_tuple(i, it->second), 2}});
+                c = 1;
+                // Local vs. global edge.
+                if (g.has_edge(v, v_i)) {
+                    l = 1;
+                } else {
+                    l = 2;
+                }
             }
+            edge_type.insert({{make_tuple(i, it->second), c}});
+            vertex_id.insert({{make_tuple(i, it->second), v_i}});
+            local.insert({{make_tuple(i, it->second), l}});
         }
 
         // Exchange second node.
@@ -1394,17 +1527,22 @@ Graph GenerateThree::generate_global_graph_malkin(const Graph &g, const bool use
         for (Node w_i = 0; w_i < num_nodes; ++w_i) {
             const auto it = three_tuple_to_node.find(make_tuple(v, w_i, u));
             three_tuple_graph.add_edge(i, it->second);
-
-            // Local vs. global edge.
-            if (g.has_edge(w, w_i)) {
-                edge_type.insert({{make_tuple(i, it->second), 2}});
-                vertex_id.insert({{make_tuple(i, it->second), w_i}});
-                local.insert({{make_tuple(i, it->second), 1}});
+            Label c, l;
+            if (w_i == dummy_node) {
+                c = 2;
+                l = 0;
             } else {
-                edge_type.insert({{make_tuple(i, it->second), 2}});
-                vertex_id.insert({{make_tuple(i, it->second), w_i}});
-                local.insert({{make_tuple(i, it->second), 2}});
+                c = 2;
+                // Local vs. global edge.
+                if (g.has_edge(w, w_i)) {
+                    l = 1;
+                } else {
+                    l = 2;
+                }
             }
+            edge_type.insert({{make_tuple(i, it->second), c}});
+            vertex_id.insert({{make_tuple(i, it->second), w_i}});
+            local.insert({{make_tuple(i, it->second), l}});
         }
 
         // Exchange three node.
@@ -1412,17 +1550,22 @@ Graph GenerateThree::generate_global_graph_malkin(const Graph &g, const bool use
         for (Node u_i = 0; u_i < num_nodes; ++u_i) {
             const auto it = three_tuple_to_node.find(make_tuple(v, w, u_i));
             three_tuple_graph.add_edge(i, it->second);
-
-            // Local vs. global edge.
-            if (g.has_edge(u, u_i)) {
-                edge_type.insert({{make_tuple(i, it->second), 3}});
-                vertex_id.insert({{make_tuple(i, it->second), u_i}});
-                local.insert({{make_tuple(i, it->second), 1}});
+            Label c, l;
+            if (u_i == dummy_node) {
+                c = 3;
+                l = 0;
             } else {
-                edge_type.insert({{make_tuple(i, it->second), 3}});
-                vertex_id.insert({{make_tuple(i, it->second), u_i}});
-                local.insert({{make_tuple(i, it->second), 2}});
+                c = 3;
+                // Local vs. global edge.
+                if (g.has_edge(u, u_i)) {
+                    l = 1;
+                } else {
+                    l = 2;
+                }
             }
+            edge_type.insert({{make_tuple(i, it->second), c}});
+            vertex_id.insert({{make_tuple(i, it->second), u_i}});
+            local.insert({{make_tuple(i, it->second), l}});
         }
     }
 

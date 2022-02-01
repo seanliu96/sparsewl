@@ -141,6 +141,7 @@ GramMatrix ColorRefinementKernel::compute_gram_matrix(const uint num_iterations,
 
 pair<ColorCounter, vector<uint>> ColorRefinementKernel::compute_colors(const Graph &g, const uint num_iterations,
                                                                        bool use_labels, bool use_edge_labels) {
+    Node dummy_node = g.get_dummy();
     size_t num_nodes = g.get_num_nodes();
 
     Labels coloring;
@@ -210,8 +211,8 @@ pair<ColorCounter, vector<uint>> ColorRefinementKernel::compute_colors(const Gra
             } else {
                 // Get colors of neighbors.
                 for (const Node &n : neighbors) {
-                    const auto t = edge_labels.find(make_tuple(v, n));
-                    colors.push_back(AuxiliaryMethods::pairing(coloring[n], t->second));
+                    const auto it = edge_labels.find(make_tuple(v, n));
+                    colors.push_back(AuxiliaryMethods::pairing(coloring[n], it->second));
                     colors.push_back(coloring[n]);
                 }
                 sort(colors.begin(), colors.end());
@@ -228,7 +229,7 @@ pair<ColorCounter, vector<uint>> ColorRefinementKernel::compute_colors(const Gra
             }
 
             // Keep track how often "new_label" occurs.
-            auto it(color_map.find(new_color));
+            auto it = color_map.find(new_color);
             if (it == color_map.end()) {
                 color_map.insert({{new_color, 1}});
                 m_label_to_index.insert({{new_color, m_num_labels}});
